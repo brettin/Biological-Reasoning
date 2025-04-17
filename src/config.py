@@ -3,7 +3,7 @@
 # Model Configuration
 MODEL_NAME = "scout"
 MODEL_BASE_URL = "http://localhost:9999/v1"
-MODEL_API_KEY = "CELS"
+MODEL_API_KEY = ""
 
 # System Messages
 SYSTEM_MESSAGES = {
