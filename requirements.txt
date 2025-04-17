@@ -1,6 +1,16 @@
+pytest>=7.0.0
+typing-extensions>=4.0.0
+biorxiv-api>=0.1.0
 openai>=1.0.0
 requests>=2.31.0
 python-dotenv>=1.0.0
-pytest>=7.0.0
-typing-extensions>=4.0.0
-biorxiv-api>=0.1.0 
+
+# distllm and dependencies
+distllm>=1.0.0
+torch>=2.0.0
+faiss-cpu>=1.7.0; platform_system!="Darwin" or platform_machine!="arm64"
+faiss-cpu>=1.7.0; platform_system=="Darwin" and platform_machine=="arm64"
+# Uncomment for GPU support
+# faiss-gpu>=1.7.0
+vllm>=0.1.0
+transformers>=4.30.0
