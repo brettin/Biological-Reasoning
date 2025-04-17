@@ -1,11 +1,16 @@
 """
 Configuration package for the biological reasoning system.
 """
+import os
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 # Model Configuration
-MODEL_NAME = "scout"
-MODEL_BASE_URL = "http://localhost:9999/v1"
-MODEL_API_KEY = "CELS"
+MODEL_NAME = os.getenv("OPENAI_MODEL_NAME", "meta-llama/Llama-3.3-70B-Instruct")
+MODEL_BASE_URL = os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1")
+MODEL_API_KEY = os.getenv("OPENAI_API_KEY")
 
 # System Messages
 SYSTEM_MESSAGES = {
@@ -16,7 +21,7 @@ SYSTEM_MESSAGES = {
 }
 
 # API Configuration
-OPENTARGETS_BASE_URL = "https://platform-api.opentargets.io/v3"
+OPENTARGETS_BASE_URL = os.getenv("OPENTARGETS_BASE_URL", "https://platform-api.opentargets.io/v3")
 
 # Reasoning Modes
 REASONING_MODES = {
