@@ -59,18 +59,23 @@ class BiologicalReasoningCoordinator:
     def determine_reasoning_mode(self, query: str) -> str:
         """Determine the most appropriate reasoning mode for a query."""
         try:
+            messages=[
+                    {"role": "system", "content": SYSTEM_MESSAGES["reasoning_mode"]},
+                    {"role": "user", "content": f"Query: {query}\nAvailable modes:\n" + '\n'.join([f"- {k}: {v}" for k, v in self.reasoning_modes.items()])}
+                ]
+            print(f"Messages: {messages}")
             response = self.client.chat.completions.create(
                 model=self.model_name,
-                messages=[
-                    {"role": "system", "content": SYSTEM_MESSAGES["reasoning_mode"]},
-                    {"role": "user", "content": f"Query: {query}\nAvailable modes: {', '.join(self.reasoning_modes.keys())}"}
-                ]
+                messages=messages,
             )
-            mode = response.choices[0].message.content.lower()
-            return mode if mode in self.reasoning_modes else REASONING_MODES["teleonomic"]  # Default to teleonomic
+            reasoning_mode = response.choices[0].message.content.strip().lower()
+            if reasoning_mode not in self.reasoning_modes:
+                print(f"Warning: Invalid reasoning mode '{reasoning_mode}' selected, defaulting to 'teleonomic'")
+                return "teleonomic"
+            return reasoning_mode
         except Exception as e:
             print(f"Error determining reasoning mode: {e}")
-            return REASONING_MODES["teleonomic"]
+            return "teleonomic"
     
     def process_query(self, query: str) -> Dict[str, Any]:
         """Process a biological query through the system."""
@@ -103,4 +108,4 @@ class BiologicalReasoningCoordinator:
         """Log the reasoning process."""
         print(f"\nProcessing Query: {query}")
         print(f"Selected Reasoning Mode: {reasoning_mode}")
-        print(f"Result: {result}\n") 
+        #print(f"Result: {result}\n") 
