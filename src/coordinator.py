@@ -59,22 +59,37 @@ class BiologicalReasoningCoordinator:
     def determine_reasoning_mode(self, query: str) -> str:
         """Determine the most appropriate reasoning mode for a query."""
         try:
+            # Format the available modes with their descriptions
+            mode_descriptions = []
+            for mode, desc in REASONING_MODES.items():
+                if mode in self.reasoning_modes:
+                    mode_descriptions.append(f"- {mode}: {desc}")
+            
             messages=[
                     {"role": "system", "content": SYSTEM_MESSAGES["reasoning_mode"]},
-                    {"role": "user", "content": f"Query: {query}\nAvailable modes:\n" + '\n'.join([f"- {k}: {v}" for k, v in self.reasoning_modes.items()])}
+                    {"role": "user", "content": f"Query: {query}\n\nAvailable modes with descriptions:\n" + '\n'.join(mode_descriptions) + "\n\nRemember to respond with ONLY the mode name, nothing else."}
                 ]
             print(f"Messages: {messages}")
+            print(f"Using model: {self.model_name}")
+            print(f"Using base URL: {self.client.base_url}")
+            print(f"Using API key: {self.client.api_key[:4]}...")  # Only show first 4 chars of API key
             response = self.client.chat.completions.create(
                 model=self.model_name,
                 messages=messages,
             )
-            reasoning_mode = response.choices[0].message.content.strip().lower()
-            if reasoning_mode not in self.reasoning_modes:
-                print(f"Warning: Invalid reasoning mode '{reasoning_mode}' selected, defaulting to 'teleonomic'")
-                return "teleonomic"
-            return reasoning_mode
+            response_text = response.choices[0].message.content.strip().lower()
+            print(f"Raw response: {response_text}")
+            
+            # Check if the response is exactly one of the valid modes
+            if response_text in self.reasoning_modes:
+                return response_text
+            
+            print(f"Warning: Invalid reasoning mode '{response_text}', defaulting to 'teleonomic'")
+            return "teleonomic"
         except Exception as e:
             print(f"Error determining reasoning mode: {e}")
+            import traceback
+            traceback.print_exc()
             return "teleonomic"
     
     def process_query(self, query: str) -> Dict[str, Any]:
