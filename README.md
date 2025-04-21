@@ -45,7 +45,6 @@ The system supports multiple biological reasoning modes:
 2. Install dependencies:
 
    ```bash
-   <!-- pip install -r requirements.txt -->
    pip install .
    ```
 
@@ -63,19 +62,19 @@ The system supports multiple biological reasoning modes:
 Run the CLI in interactive mode:
 
 ```bash
-python src/cli.py
+python -m bio_reasoning.cli
 ```
 
 Or process a specific query:
 
 ```bash
-python src/cli.py --query "What is the function of TP53?"
+python -m bio_reasoning.cli --query "What is the function of TP53?"
 ```
 
 ### Python API
 
 ```python
-from src.coordinator import BiologicalReasoningCoordinator
+from bio_reasoning.coordinator import BiologicalReasoningCoordinator
 
 # Initialize the coordinator
 coordinator = BiologicalReasoningCoordinator()
@@ -88,7 +87,7 @@ print(result)
 ## Project Structure
 
 ```
-src/
+bio_reasoning/
 ├── layers/
 │   ├── layer_a.py      # Parametric Memory implementation
 │   ├── layer_b.py      # Bespoke Foundation Models

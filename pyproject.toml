@@ -18,6 +18,6 @@ dependencies = [
 ]
 
 [tool.setuptools]
-packages = ["src"]
+packages = ["bio_reasoning"]
 # authors = [{ name = "Your Name", email = "your.email@example.com" }]
 # license = { file = "LICENSE" }

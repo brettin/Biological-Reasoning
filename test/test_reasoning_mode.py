@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
 import argparse
-from coordinator import BiologicalReasoningCoordinator
+from bio_reasoning.coordinator import BiologicalReasoningCoordinator
+
 
 def main():
     # Set up argument parser
-    parser = argparse.ArgumentParser(description="Test the reasoning mode determination")
+    parser = argparse.ArgumentParser(
+        description="Test the reasoning mode determination"
+    )
     parser.add_argument("--query", required=True, help="Biological query to analyze")
     args = parser.parse_args()
 
@@ -18,5 +21,6 @@ def main():
     print(f"\nQuery: {args.query}")
     print(f"Selected Reasoning Mode: {reasoning_mode}")
 
+
 if __name__ == "__main__":
-    main() 
+    main()
