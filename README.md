@@ -7,11 +7,13 @@ A three-layer artificial intelligence architecture designed to emulate biologica
 The system consists of three main layers:
 
 1. **Layer A (Parametric Memory)**
+
    - General-purpose language model interface
    - Stores and retrieves broad biological knowledge
    - Natural language processing capabilities
 
 2. **Layer B (Bespoke Foundation Models)**
+
    - Specialized modules for biological data analysis
    - Genomic sequence analysis
    - Imaging analysis
@@ -34,32 +36,38 @@ The system supports multiple biological reasoning modes:
 ## Installation
 
 1. Clone the repository:
-```bash
-git clone https://github.com/yourusername/biological-reasoning.git
-cd biological-reasoning
-```
+
+   ```bash
+   git clone https://github.com/yourusername/biological-reasoning.git
+   cd biological-reasoning
+   ```
 
 2. Install dependencies:
-```bash
-pip install -r requirements.txt
-```
+
+   ```bash
+   <!-- pip install -r requirements.txt -->
+   pip install .
+   ```
 
 3. Set up environment variables:
-```bash
-cp .env.example .env
-# Edit .env with your API keys and configuration
-```
+
+   ```bash
+   cp .env.example .env
+   # Edit .env with your API keys and configuration
+   ```
 
 ## Usage
 
 ### Command Line Interface
 
 Run the CLI in interactive mode:
+
 ```bash
 python src/cli.py
 ```
 
 Or process a specific query:
+
 ```bash
 python src/cli.py --query "What is the function of TP53?"
 ```
@@ -102,6 +110,7 @@ To add new reasoning modes:
 ## Testing
 
 Run the test suite:
+
 ```bash
 pytest tests/
 ```
@@ -116,4 +125,4 @@ MIT License
 2. Create a feature branch
 3. Commit your changes
 4. Push to the branch
-5. Create a Pull Request 
+5. Create a Pull Request
