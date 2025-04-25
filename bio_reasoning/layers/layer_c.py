@@ -1,7 +1,7 @@
 from typing import Dict, Any, Optional
 from abc import ABC, abstractmethod
 from .resource_manager import ResourceManager
-from ..config.external_resources import EXTERNAL_RESOURCES
+from ..external_resources import EXTERNAL_RESOURCES
 import urllib.parse
 import requests
 import warnings
@@ -129,7 +129,6 @@ class OpenTargetsRepository(ExternalRepository):
         """Make a direct request to the OpenTargets API without using the resource manager."""
         try:
             # Get the base URL from the external resources configuration
-            from ..config.external_resources import EXTERNAL_RESOURCES
             base_url = EXTERNAL_RESOURCES["opentargets"].base_url
             
             # Build the full URL
