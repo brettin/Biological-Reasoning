@@ -44,9 +44,9 @@ class BiologicalReasoningCoordinator:
 
         # Initialize reasoning modes
         self.reasoning_modes = {
-            REASONING_MODES["phylogenetic"]: PhylogeneticReasoning(),
-            REASONING_MODES["teleonomic"]: TeleonomicReasoning(),
-            REASONING_MODES["mechanistic"]: MechanisticReasoning(),
+            "phylogenetic": PhylogeneticReasoning(),
+            "teleonomic": TeleonomicReasoning(),
+            "mechanistic": MechanisticReasoning(),
         }
 
     def _initialize_model(self):
@@ -86,13 +86,12 @@ class BiologicalReasoningCoordinator:
             print(f"Raw response: {response_text}")
 
             # Check if the response is exactly one of the valid modes
-            if response_text in self.reasoning_modes:
+            if response_text in self.reasoning_modes.keys():
                 return response_text
-
-            print(
-                f"Warning: Invalid reasoning mode '{response_text}', defaulting to 'teleonomic'"
-            )
-            return "teleonomic"
+            else:
+                print(f"could not find {response_text} in {self.reasoning_modes}")
+                print("Returning teleonomic")
+                return "teleonomic"
         except Exception as e:
             print(f"Error determining reasoning mode: {e}")
             import traceback
