@@ -19,7 +19,7 @@ class ParametricMemory(ABC):
     def _initialize_model(self):
         """Initialize the model connection."""
         # Configure the client to use the local model endpoint
-        print(f"initializing model {MODEL_NAME} at {MODEL_BASE_URL} with {MODEL_API_KEY}")
+        print(f"In ParametricMemory, initializing model {MODEL_NAME} at {MODEL_BASE_URL} with {MODEL_API_KEY}")
         self.client = openai.OpenAI(base_url=MODEL_BASE_URL, api_key=MODEL_API_KEY)
 
     @abstractmethod
