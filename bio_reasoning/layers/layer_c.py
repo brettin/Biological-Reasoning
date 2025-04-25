@@ -135,19 +135,19 @@ class OpenTargetsRepository(ExternalRepository):
             url = f"{base_url}/{endpoint}"
             
             # Make the request with SSL verification disabled
-            response = requests.get(
-                url,
-                params=params,
-                headers={"Accept": "application/json"},
-                verify=False  # Disable SSL verification
-            )
-            
-            if response.status_code == 200:
-                return response.json()
-            else:
-                print(f"OpenTargets API returned status code {response.status_code}")
-                return {}
-                
+            #response = requests.get(
+            #    url,
+            #    params=params,
+            #    headers={"Accept": "application/json"},
+            #    verify=False  # Disable SSL verification
+            #)
+            print("Fix call to OpenTargets")
+            #if response.status_code == 200:
+            #    return response.json()
+            #else:
+            #    print(f"OpenTargets API returned status code {response.status_code}")
+            #    return {}
+            return {}    
         except Exception as e:
             print(f"Error in direct API request to OpenTargets: {e}")
             return {}
