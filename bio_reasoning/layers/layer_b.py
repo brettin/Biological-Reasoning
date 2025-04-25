@@ -19,7 +19,7 @@ class SpecializedModel(ABC):
     def _initialize_model(self):
         """Initialize the model connection."""
         # Configure the client to use the local model endpoint
-        print("Initializing SpecializedModel connection in layer_b with {MODEL_BASE_URL}, {MODEL_API_KEY}, {MODEL_NAME}")
+        print(f"Initializing SpecializedModel connection in layer_b with {MODEL_BASE_URL}, {MODEL_API_KEY}, {MODEL_NAME}")
         self.client = openai.OpenAI(
             base_url=MODEL_BASE_URL,
             api_key=MODEL_API_KEY)
