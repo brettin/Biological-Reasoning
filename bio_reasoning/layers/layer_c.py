@@ -1,7 +1,7 @@
 from typing import Dict, Any, Optional
 from abc import ABC, abstractmethod
 from .resource_manager import ResourceManager
-from ..config.external_resources import EXTERNAL_RESOURCES
+from ..external_resources import EXTERNAL_RESOURCES
 import urllib.parse
 import requests
 import warnings
@@ -129,26 +129,25 @@ class OpenTargetsRepository(ExternalRepository):
         """Make a direct request to the OpenTargets API without using the resource manager."""
         try:
             # Get the base URL from the external resources configuration
-            from ..config.external_resources import EXTERNAL_RESOURCES
             base_url = EXTERNAL_RESOURCES["opentargets"].base_url
             
             # Build the full URL
             url = f"{base_url}/{endpoint}"
             
             # Make the request with SSL verification disabled
-            response = requests.get(
-                url,
-                params=params,
-                headers={"Accept": "application/json"},
-                verify=False  # Disable SSL verification
-            )
-            
-            if response.status_code == 200:
-                return response.json()
-            else:
-                print(f"OpenTargets API returned status code {response.status_code}")
-                return {}
-                
+            #response = requests.get(
+            #    url,
+            #    params=params,
+            #    headers={"Accept": "application/json"},
+            #    verify=False  # Disable SSL verification
+            #)
+            print("Fix call to OpenTargets")
+            #if response.status_code == 200:
+            #    return response.json()
+            #else:
+            #    print(f"OpenTargets API returned status code {response.status_code}")
+            #    return {}
+            return {}    
         except Exception as e:
             print(f"Error in direct API request to OpenTargets: {e}")
             return {}

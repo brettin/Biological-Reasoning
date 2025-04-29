@@ -1,20 +1,25 @@
 """Configuration settings for the biological reasoning system."""
+import os
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 # Model Configuration
-MODEL_NAME = "scout"
-MODEL_BASE_URL = "http://localhost:9999/v1"
-MODEL_API_KEY = "CELS"
+MODEL_NAME = os.getenv("MODEL_NAME", "meta-llama/Llama-3.3-70B-Instruct")
+MODEL_BASE_URL = os.getenv("MODEL_BASE_URL", "https://api.openai.com/v1")
+MODEL_API_KEY = os.getenv("MODEL_API_KEY", "EMPTY")
 
 # System Messages
 SYSTEM_MESSAGES = {
     "knowledge_retrieval": "You are a biological knowledge retrieval system.",
     "sequence_analysis": "You are a genomic sequence analysis system.",
     "image_analysis": "You are a biological image analysis system.",
-    "reasoning_mode": "Determine the most appropriate biological reasoning mode for this query."
+    "reasoning_mode": "You are a biological reasoning mode selector. Your task is to analyze the query and select the most appropriate reasoning mode from the available options. IMPORTANT: Your response must be exactly one word - just the name of the selected mode, nothing else. For example: 'phylogenetic' or 'mechanistic'."
 }
 
 # API Configuration
-OPENTARGETS_BASE_URL = "https://platform-api.opentargets.io/v3"
+OPENTARGETS_BASE_URL = os.getenv("OPENTARGETS_BASE_URL", "https://platform-api.opentargets.io/v3")
 
 # Reasoning Modes
 REASONING_MODES = {
