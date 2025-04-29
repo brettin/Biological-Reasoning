@@ -28,9 +28,16 @@ The system consists of three main layers:
 
 The system supports multiple biological reasoning modes:
 
-- Phylogenetic Reasoning
-- Teleonomic Reasoning
-- Mechanistic Reasoning
+- Phylogenetic Reasoning: Uses evolutionary relationships (via genetic or phenotypic comparisons) to infer common ancestry, divergence, and the historical origins of traits. It relies on sequence alignments, phylogenetic trees, and taxonomic data to transfer knowledge among organisms.
+- Teleonomic Reasoning: Explains traits in terms of their purpose or function—that is, how a trait may confer a fitness advantage. It connects observed biological features with their adaptive benefits, often drawing on well‐documented case studies (e.g., beak shapes in finches).
+- Mechanistic Reasoning: Focuses on the cause‐and‐effect processes underlying biological functions. It breaks down complex phenomena (e.g., metabolic pathways, signal transduction, muscle contraction) into component interactions and causal chains to explain 'how' a process works.
+- Tradeoff Reasoning:
+- Systems Reasoning:
+- Spatial Reasoning:
+- Temporal Reasoning:
+- Homeostatic Reasoning: 
+- Ontogenetic Reasoning: 
+- Comparative Reasoning: 
 - (Additional modes can be added following the same pattern)
 
 ## Installation

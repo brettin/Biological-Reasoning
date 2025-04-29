@@ -3,7 +3,7 @@ from typing import Dict, Any, List, Optional
 import requests
 import time
 from datetime import datetime, timedelta
-from ..config.external_resources import (
+from ..external_resources import (
     EXTERNAL_RESOURCES,
     RESOURCE_SELECTION_RULES,
     CACHE_CONFIG,

@@ -57,6 +57,11 @@ class PhylogeneticReasoning(ReasoningMode):
 class TeleonomicReasoning(ReasoningMode):
     """Reasoning based on function and purpose."""
 
+    """Teleonomic: Explains traits in terms of their purpose or function—that is, 
+    how a trait may confer a fitness advantage. It connects observed biological 
+    features with their adaptive benefits, often drawing on well‐documented case 
+    studies (e.g., beak shapes in finches)."""
+    
     def reason(self, query: str) -> Dict[str, Any]:
         """Perform teleonomic reasoning."""
         # Get basic knowledge from Layer A
