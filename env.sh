@@ -1,7 +1,6 @@
 export PYTHONPATH=$PYTHONPATH:bio_reasoning
-#
-# Edit these to match your local environment
-#
-export MODEL_BASE_URL="model api endpoint url"
-export MODEL_API_KEY="api key for model api endpoint"
-export MODEL_NAME="served model api endpoint url"
+
+# Replace these values with your correct values
+export MODEL_BASE_URL="http://localhost:9999/v1"
+export MODEL_API_KEY="EMPTY"
+export MODEL_NAME="meta-llama/Llama-3.3-70B-Instruct"
