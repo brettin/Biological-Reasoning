@@ -1,9 +1,9 @@
 from typing import Dict, Any, List
 from abc import ABC, abstractmethod
-from src.layers.layer_a import BiologicalKnowledgeStore
-from src.layers.layer_b import GenomicSequenceAnalyzer, ImagingAnalyzer
-from src.layers.layer_c import OpenTargetsRepository, PubMedRepository, BioRxivRepository
-from src.config import SYSTEM_MESSAGES
+from bio_reasoning.layers.layer_a import BiologicalKnowledgeStore
+from bio_reasoning.layers.layer_b import GenomicSequenceAnalyzer, ImagingAnalyzer
+from bio_reasoning.layers.layer_c import OpenTargetsRepository, PubMedRepository, BioRxivRepository
+from bio_reasoning.config import SYSTEM_MESSAGES
 
 class ReasoningMode(ABC):
     """Abstract base class for biological reasoning modes."""
