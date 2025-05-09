@@ -1,25 +1,29 @@
 #!/usr/bin/env python3
 import argparse
-from bio_reasoning.coordinator import BiologicalReasoningCoordinator
+from bio_reasoning.coordinator import Coordinator
 
 
 def main():
     # Set up argument parser
     parser = argparse.ArgumentParser(
-        description="Test the reasoning mode determination"
+        description="Test reasoning mode selection"
     )
-    parser.add_argument("--query", required=True, help="Biological query to analyze")
+    parser.add_argument("--query", type=str, required=True, help="Biological query to test")
     args = parser.parse_args()
 
     # Initialize the coordinator
-    coordinator = BiologicalReasoningCoordinator()
+    coordinator = Coordinator()
 
-    # Determine the reasoning mode
-    reasoning_mode = coordinator.determine_reasoning_mode(args.query)
+    # Process the query
+    result = coordinator.process_query(args.query)
 
-    # Print the result
+    # Print the results
     print(f"\nQuery: {args.query}")
-    print(f"Selected Reasoning Mode: {reasoning_mode}")
+    print(f"Reasoning Mode: {result['reasoning_mode']}")
+    print("\nLayer Results:")
+    print(f"Layer A: {result['layer_a']}")
+    print(f"Layer B: {result['layer_b']}")
+    print(f"Layer C: {result['layer_c']}")
 
 
 if __name__ == "__main__":
