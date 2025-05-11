@@ -109,6 +109,13 @@ class LayerC(Layer):
         """Add a new repository to the layer."""
         self._repositories.append(repository)
 
+    def remove_repository(self, repository: Repository) -> bool:
+        try:
+            self._repositories.remove(repository)
+            return True
+        except ValueError:
+            return False
+
     def prepare_input(self, query: str, context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """Prepare the input for searching."""
         return {

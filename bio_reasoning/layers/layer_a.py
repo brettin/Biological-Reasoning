@@ -27,7 +27,7 @@ class ParametricMemory(ABC):
         pass
 
 
-class InMemoryKnowledgeStore(ParametricMemory):
+class GeneralMemoryStore(ParametricMemory):
     """A simple in-memory knowledge store."""
 
     def retrieve(self, query: str) -> Dict[str, Any]:
@@ -64,6 +64,13 @@ class LayerA(Layer):
     def add_knowledge_store(self, store: ParametricMemory) -> None:
         """Add a new knowledge store to the layer."""
         self._knowledge_stores.append(store)
+
+    def remove_knowledge_store(self, store: ParametricMemory) -> bool:
+        try:
+            self._knowledge_stores.remove(store)
+            return True
+        except ValueError:
+            return False
 
     def prepare_input(self, query: str, context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """Prepare the input for knowledge retrieval."""
