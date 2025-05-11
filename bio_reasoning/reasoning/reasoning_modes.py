@@ -9,7 +9,7 @@ from bio_reasoning.config import (
     REASONING_MODES,
 )
 from bio_reasoning.utils import call_model_with_retry
-from bio_reasoning.layers.layer_a import LayerA, InMemoryKnowledgeStore
+from bio_reasoning.layers.layer_a import LayerA, GeneralMemoryStore
 from bio_reasoning.layers.layer_b import LayerB, GenomicSequenceAnalyzer, ImagingAnalyzer
 from bio_reasoning.layers.layer_c import LayerC, OpenTargetsRepository, PubMedRepository, BioRxivRepository
 
@@ -19,7 +19,7 @@ class ReasoningMode(ABC):
     def __init__(self):
         # Initialize Layer A
         self.layer_a = LayerA("BiologicalKnowledgeStore")
-        self.layer_a.add_knowledge_store(InMemoryKnowledgeStore())
+        self.layer_a.add_knowledge_store(GeneralMemoryStore())
 
         # Initialize Layer B
         self.layer_b = LayerB("SpecializedAnalysis")
@@ -288,7 +288,7 @@ class ReasoningModeSelector:
         """Initialize the layers needed for reasoning."""
         # Initialize Layer A
         self.layer_a = LayerA("BiologicalKnowledgeStore")
-        self.layer_a.add_knowledge_store(InMemoryKnowledgeStore())
+        self.layer_a.add_knowledge_store(GeneralMemoryStore())
 
         # Initialize Layer B
         self.layer_b = LayerB("SpecializedAnalysis")
@@ -318,16 +318,16 @@ class ReasoningModeSelector:
                     + "\n\nRemember to respond with ONLY the mode name, nothing else.",
                 },
             ]
-            print(f"Messages: {messages}")
-            print(f"Using model: {self.model_name}")
-            print(f"Using base URL: {self.client.base_url}")
-            print(f"Using API key: {self.client.api_key[:4]}...")  # Only show first 4 chars of API key
+            #print(f"Messages: {messages}")
+            #print(f"Using model: {self.model_name}")
+            #print(f"Using base URL: {self.client.base_url}")
+            #print(f"Using API key: {self.client.api_key[:4]}...")  # Only show first 4 chars of API key
             response = self.client.chat.completions.create(
                 model=self.model_name,
                 messages=messages,
             )
             response_text = response.choices[0].message.content.strip().lower()
-            print(f"Raw response: {response_text}")
+            #print(f"Raw response: {response_text}")
 
             # Check if the response is exactly one of the valid modes
             if response_text in REASONING_MODES:
