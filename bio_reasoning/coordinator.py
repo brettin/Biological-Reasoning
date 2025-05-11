@@ -1,5 +1,5 @@
 from typing import Dict, Any, Optional
-from bio_reasoning.layers.layer_a import LayerA, InMemoryKnowledgeStore
+from bio_reasoning.layers.layer_a import LayerA, GeneralMemoryStore
 from bio_reasoning.layers.layer_b import LayerB, GenomicSequenceAnalyzer, ImagingAnalyzer
 from bio_reasoning.layers.layer_c import (
     LayerC,
@@ -17,7 +17,7 @@ class Coordinator:
     def __init__(self):
         # Initialize Layer A with knowledge store
         self.layer_a = LayerA("BiologicalKnowledgeStore")
-        self.layer_a.add_knowledge_store(InMemoryKnowledgeStore())
+        self.layer_a.add_knowledge_store(GeneralMemoryStore())
 
         # Initialize Layer B with specialized analyzers
         self.layer_b = LayerB("SpecializedAnalysis")
