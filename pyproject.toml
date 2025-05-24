@@ -5,19 +5,26 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "bio-reasoning"
 version = "0.1.0"
+authors = [{ name = "Thomas Brettin", email = "brettint@gmail.com" }]
 description = "Biological Reasoning System"
 readme = "README.md"
-requires-python = ">=3.7"
+requires-python = ">=3.10"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
 dependencies = [
-    "openai>=1.0.0",
-    "requests>=2.31.0",
-    "python-dotenv>=1.0.0",
-    "pytest>=7.0.0",
-    "typing-extensions>=4.0.0",
-    "dotenv>=0.9.9",
+    "openai>=1.79.0",
+    "loguru>=0.7.3",
+    "httpx>=0.28.1",
+    "toolregistry>=0.4.10"
 ]
 
-[tool.setuptools]
-packages = ["bio_reasoning"]
-authors = [{ name = "Thomas Brettin", email = "brettint@gmail.com" }]
-# license = { file = "LICENSE" }
+[project.optional-dependencies]
+dev = ["dotenv>=0.9.9", "openai>=1.79.0","mypy>=1.14.1", "build>=1.2.2.post1", "twine>=6.1.0"]
+
+[tool.setuptools.packages.find]
+where = ["."]
