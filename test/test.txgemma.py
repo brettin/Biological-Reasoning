@@ -14,6 +14,8 @@ parser.add_argument("--key", type=str, default="EMPTY",
         help="the key passed to the vllm entrypoint when it was started")
 parser.add_argument("--drug_smiles", type=str, default="CN1C(=O)CN=C(C2=CCCCC2)c2cc(Cl)ccc21",
                     help="drug_smiles, default CN1C(=O)CN=C(C2=CCCCC2)c2cc(Cl)ccc21")
+parser.add_argument("--target_amino_acid_sequence", type=str, default="",
+                    help="target_amino_acid_sequence, default empty")
 
 args = parser.parse_args()
 print(f'using host: {args.host}')
@@ -47,9 +49,18 @@ client = OpenAI(
     base_url=openai_api_base,
 )
 
+target_amino_acid_sequence = ""
+if args.target_amino_acid_sequence:
+    with open(args.target_amino_acid_sequence, "r") as f:
+        target_amino_acid_sequence = f.read()
+
 task_names=[]
 for task_name, value in tdc_prompts_json.items():
     task_names.append(task_name)
+    
+    if '{Target amino acid sequence}' in value and target_amino_acid_sequence:
+        tdc_prompts_json[task_name] = value.replace('{Target amino acid sequence}', target_amino_acid_sequence)
+    
     if input_type in value:
         TDC_PROMPT = tdc_prompts_json[task_name].replace(input_type, args.drug_smiles)
         print(f"User: {TDC_PROMPT}")
