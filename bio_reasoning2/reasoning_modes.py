@@ -1,11 +1,12 @@
 import os
+
 from cicada.core import MultiModalModel
 from dotenv import load_dotenv
 from toolregistry import ToolRegistry
 from toolregistry.hub import WebSearchGoogle
 
 from .layers.a import ParametricMemory
-from .layers.b import VisualDescriber
+from .layers.b import visual_describer_factory
 
 
 class ReasoningMode:
@@ -52,9 +53,14 @@ class ExampleReasoningMode(ReasoningMode):
         # register layer B tools
         system_prompt = "You are professional biologist with specialty in image analysis. Please describe the image in detail."
 
-        layer_b.register_from_class(
-            VisualDescriber(model=model, system_prompt=system_prompt)
+        visual_describer = visual_describer_factory(
+            api_key=os.getenv("API_KEY"),
+            api_base_url=os.getenv("BASE_URL"),
+            model_name=os.getenv("MODEL_NAME", "gpt-4.1-mini"),
+            system_prompt=system_prompt,
         )
+
+        layer_b.register(visual_describer)
 
         # register layer C tools
         layer_c.register_from_class(WebSearchGoogle())
