@@ -1,75 +1,130 @@
-from typing import List, Optional, Union
+from typing import Callable, List, Union
 
-from cicada.core import MultiModalModel
+import httpx
+from toolregistry import Tool
 
 from .utils import load_image_data
 
 
-class VisualDescriber:
-    """A class that describes images using OpenAI's vision model.
+def _get_visual_description(
+    uris: Union[str, List[str]],
+    api_base_url: str,
+    api_key: str,
+    model_name: str,
+    system_prompt: str = None,
+    user_prompt: str = None,
+) -> str:
+    """
+    Generates a visual description for one or more images using an external API.
 
-    Attributes:
-        model: The OpenAI client instance.
-        system_prompt: The prompt that guides how images should be described.
-        supported_schemes: Tuple of supported URI schemes.
+    Args:
+        uris (Union[str, List[str]]): The URI or list of URIs pointing to the image(s) to describe.
+        api_base_url (str): The base URL of the API providing the visual description service.
+        api_key (str): The API key used for authentication with the API.
+        model_name (str): The name of the model to use for generating the description.
+        system_prompt (str, optional): A prompt to establish the system context for the conversation. Defaults to None.
+        user_prompt (str, optional): Additional user input or instructions to customize the visual description. Defaults to None.
+
+    Returns:
+        str: The visual description extracted from the API response.
+
+    Raises:
+        TypeError: If `uris` is not a string or a list of strings.
+        ValueError: If no image URIs are provided.
+        RuntimeError: If the API request fails with an HTTP error.
+    """
+    api_url = f"{api_base_url}/chat/completions"
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {api_key}",
+    }
+
+    if isinstance(uris, str):
+        uris = [uris]
+    elif not isinstance(uris, list):
+        raise TypeError("uris must be either a string or list of strings")
+
+    if not uris:
+        raise ValueError("At least one image URI must be provided")
+
+    messages = [{"role": "system", "content": system_prompt}]
+
+    if user_prompt:
+        messages.append({"role": "user", "content": user_prompt})
+
+    # Load and attach images
+    image_contents = []
+    for uri in uris:
+        image_contents.append(
+            {
+                "type": "image_url",
+                "image_url": load_image_data(uri),
+            }
+        )
+
+    # Combine all image contents into single user message
+    messages.append({"role": "user", "content": image_contents})
+    payload = {"model": model_name, "messages": messages}
+
+    try:
+        response = httpx.post(api_url, json=payload, headers=headers, timeout=600)
+        response.raise_for_status()
+        result = response.json()
+        return result.get("choices", [{}])[0].get("message", {}).get("content", "")
+    except httpx.HTTPStatusError as e:
+        raise RuntimeError(
+            f"Failed to get visual description: {e.response.text}"
+        ) from e
+
+
+def visual_describer_factory(
+    api_key: str,
+    api_base_url: str,
+    model_name: str = "gpt-4.1-mini",
+    system_prompt: str = None,
+) -> Callable[[Union[str, List[str]], str], str]:
+    """
+    Factory function to create a visual description function with provided configuration.
+
+    Args:
+        api_key (str): The API key for authentication.
+        api_base_url (str): The base URL of the API providing the visual description service.
+        model_name (str, optional): Name of the model. Defaults to 'gpt-4.1-mini'.
+        system_prompt (str, optional): A prompt to set the system context. Defaults to None.
+
+    Returns:
+        Callable[[Union[str, List[str]], str], str]: A function that accepts image URIs and user prompt to generate a visual description.
     """
 
-    def __init__(self, model: MultiModalModel, system_prompt: str):
-        """Initializes the visual describer with an OpenAI client and system prompt.
-
-        Args:
-            model: An OpenAI client instance configured with API key.
-            system_prompt: The prompt that guides the image description process.
+    def visual_describer(uris: Union[str, List[str]], user_prompt: str = "") -> str:
         """
-        self.model = model
-        self.system_prompt = system_prompt
-
-    def describe(
-        self, uris: Union[str, List[str]], user_prompt: Optional[str] = None
-    ) -> str:
-        """Generates descriptions for one or more images using OpenAI's vision model.
+        Generates a visual description for one or more images using an external API.
 
         Args:
-            uris: Either a single image URI (string) or list of URIs.
-            user_prompt: Optional text prompt to guide the description.
+            uris (Union[str, List[str]]): The URI or list of URIs pointing to the image(s) to describe.
+            user_prompt (str): Additional user input or instructions to customize the visual description. Defaults to "".
 
         Returns:
-            Generated description from the vision model.
+            dict: A dictionary containing the visual description as part of the API response.
 
         Raises:
+            TypeError: If `uris` is not a string or a list of strings.
             ValueError: If no image URIs are provided.
-            TypeError: If uris is neither string nor list.
+            RuntimeError: If the API request fails with an HTTP error.
         """
-        # Normalize input to always be a list
-        if isinstance(uris, str):
-            uris = [uris]
-        elif not isinstance(uris, list):
-            raise TypeError("uris must be either a string or list of strings")
+        return _get_visual_description(
+            uris=uris,
+            user_prompt=user_prompt,
+            api_key=api_key,
+            api_base_url=api_base_url,
+            model_name=model_name,
+            system_prompt=system_prompt,
+        )
 
-        if not uris:
-            raise ValueError("At least one image URI must be provided")
+    # Copy the docstring from the original function
+    visual_describer.__doc__ = _get_visual_description.__doc__
 
-        messages = [{"role": "system", "content": self.system_prompt}]
-
-        if user_prompt:
-            messages.append({"role": "user", "content": user_prompt})
-
-        # Load and attach images
-        image_contents = []
-        for uri in uris:
-            image_contents.append(
-                {
-                    "type": "image_url",
-                    "image_url": load_image_data(uri),
-                }
-            )
-
-        # Combine all image contents into single user message
-        messages.append({"role": "user", "content": image_contents})
-
-        # Call model (assuming this matches your actual API interface)
-        result = self.model.query(messages=messages)
-        return result["content"]
+    return visual_describer
 
 
 if __name__ == "__main__":
@@ -79,18 +134,26 @@ if __name__ == "__main__":
 
     load_dotenv()
 
-    model = MultiModalModel(
+    system_prompt = "You are professional biologist with specialty in image analysis. Please describe the image in detail."
+
+    visual_describer = visual_describer_factory(
         api_key=os.getenv("API_KEY"),
         api_base_url=os.getenv("BASE_URL"),
         model_name=os.getenv("MODEL_NAME", "gpt-4.1-mini"),
+        system_prompt=system_prompt,
     )
-    system_prompt = "You are professional biologist with specialty in image analysis. Please describe the image in detail."
 
-    visual_describer = VisualDescriber(model=model, system_prompt=system_prompt)
+    # test if it works with toolregistry
+    visual_describer = Tool.from_function(
+        visual_describer,
+        name="visual_describer",
+    )
+
+    print(visual_describer.get_json_schema())
+
+    # test if it works
     print(
-        visual_describer.describe(
-            [
-                "https://epi-rsc.rsc-cdn.org/globalassets/05-journals-books-databases/our-journals/00-journal-pages-heros/Chemical-biology-HERO.jpg"
-            ]
+        visual_describer.callable(
+            uris="https://epi-rsc.rsc-cdn.org/globalassets/05-journals-books-databases/our-journals/00-journal-pages-heros/Chemical-biology-HERO.jpg"
         )
     )
