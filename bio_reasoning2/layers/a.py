@@ -1,7 +1,7 @@
 """
 Layer A is the parametric memory of a general large language model (LLM), capturing broadly applicable knowledge pre-trained or fine-tuned into its weights."""
 
-import openai
+from cicada.core import MultiModalModel
 
 
 class ParametricMemory:
@@ -13,7 +13,7 @@ class ParametricMemory:
     """
 
     # TODO: set up async support, but current version is okay as well, as toolregistry handles parallel execution of tools
-    def __init__(self, *, model: openai.OpenAI, system_prompt: str):
+    def __init__(self, *, model: MultiModalModel, system_prompt: str):
         """Initializes the parametric memory with a model and system prompt.
 
         Args:
@@ -37,11 +37,8 @@ class ParametricMemory:
             {"role": "system", "content": self.system_prompt},
             {"role": "user", "content": user_prompt},
         ]
-        resp = self.model.chat.completions.create(
-            model="gpt-4o",
-            messages=messages,
-        )
-        return resp.choices[0].message.content
+        result = self.model.query(messages=messages)
+        return result["content"]
 
 
 if __name__ == "__main__":
@@ -50,17 +47,14 @@ if __name__ == "__main__":
 
     load_dotenv()
 
-    model = openai.OpenAI(
+    model = MultiModalModel(
         api_key=os.getenv("API_KEY"),
-        base_url=os.getenv("BASE_URL"),
+        api_base_url=os.getenv("BASE_URL"),
+        model_name=os.getenv("MODEL_NAME"),
     )
 
-    parametric_memory_gpt_4_1 = ParametricMemory(
+    parametric_memory = ParametricMemory(
         model=model,
         system_prompt="You are an expert in biology. You are given a question and you need to answer it with the best of your knowledge.",
     )
-    print(
-        parametric_memory_gpt_4_1.answer(
-            user_prompt="What is the function of mitochondria?"
-        )
-    )
+    print(parametric_memory.answer(user_prompt="What is the function of mitochondria?"))
