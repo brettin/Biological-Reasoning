@@ -20,11 +20,12 @@ dependencies = [
     "openai>=1.79.0",
     "loguru>=0.7.3",
     "httpx>=0.28.1",
-    "toolregistry>=0.4.10"
+    "toolregistry>=0.4.12",
+    "python-dotenv>=1.1.0",
 ]
 
 [project.optional-dependencies]
-dev = ["dotenv>=0.9.9", "openai>=1.79.0","mypy>=1.14.1", "build>=1.2.2.post1", "twine>=6.1.0"]
+dev = ["mypy>=1.14.1", "build>=1.2.2.post1", "twine>=6.1.0"]
 
 [tool.setuptools.packages.find]
 where = ["."]
