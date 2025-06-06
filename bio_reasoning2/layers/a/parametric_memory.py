@@ -1,6 +1,3 @@
-"""
-Layer A is the parametric memory of a general large language model (LLM), capturing broadly applicable knowledge pre-trained or fine-tuned into its weights."""
-
 from cicada.core import MultiModalModel
 
 
