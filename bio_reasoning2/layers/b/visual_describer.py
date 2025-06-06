@@ -5,61 +5,6 @@ from toolregistry import Tool
 from .utils import load_image_data
 from ...utils import query_chat_completion
 
-def _get_visual_description(
-    uris: Union[str, List[str]],
-    api_base_url: str,
-    api_key: str,
-    model_name: str,
-    system_prompt: str = None,
-    user_prompt: str = None,
-) -> str:
-    """
-    Generates a visual description for one or more images using an external API.
-
-    Args:
-        uris (Union[str, List[str]]): The URI or list of URIs pointing to the image(s) to describe.
-        api_base_url (str): The base URL of the API providing the visual description service.
-        api_key (str): The API key used for authentication with the API.
-        model_name (str): The name of the model to use for generating the description.
-        system_prompt (str, optional): A prompt to establish the system context for the conversation. Defaults to None.
-        user_prompt (str, optional): Additional user input or instructions to customize the visual description. Defaults to None.
-
-    Returns:
-        str: The visual description extracted from the API response.
-
-    Raises:
-        TypeError: If `uris` is not a string or a list of strings.
-        ValueError: If no image URIs are provided.
-    """
-    if isinstance(uris, str):
-        uris = [uris]
-    elif not isinstance(uris, list):
-        raise TypeError("uris must be either a string or list of strings")
-
-    if not uris:
-        raise ValueError("At least one image URI must be provided")
-
-    messages = [{"role": "system", "content": system_prompt}]
-
-    if user_prompt:
-        messages.append({"role": "user", "content": user_prompt})
-
-    # Load and attach images
-    image_contents = []
-    for uri in uris:
-        image_contents.append(
-            {
-                "type": "image_url",
-                "image_url": load_image_data(uri),
-            }
-        )
-
-    # Combine all image contents into single user message
-    messages.append({"role": "user", "content": image_contents})
-
-    # Delegate API call to helper function
-    return query_chat_completion(api_base_url, api_key, model_name, messages)
-
 
 def visual_describer_factory(
     api_key: str,
@@ -96,17 +41,36 @@ def visual_describer_factory(
             ValueError: If no image URIs are provided.
             RuntimeError: If the API request fails with an HTTP error.
         """
-        return _get_visual_description(
-            uris=uris,
-            user_prompt=user_prompt,
-            api_key=api_key,
-            api_base_url=api_base_url,
-            model_name=model_name,
-            system_prompt=system_prompt,
-        )
+        # Validate and normalize URIs
+        if isinstance(uris, str):
+            uris = [uris]
+        elif not isinstance(uris, list):
+            raise TypeError("uris must be either a string or list of strings")
 
-    # Copy the docstring from the original function
-    visual_describer.__doc__ = _get_visual_description.__doc__
+        if not uris:
+            raise ValueError("At least one image URI must be provided")
+
+        # Build the message prompt
+        messages = [{"role": "system", "content": system_prompt}]
+
+        if user_prompt:
+            messages.append({"role": "user", "content": user_prompt})
+
+        # Load and attach image data
+        image_contents = []
+        for uri in uris:
+            image_contents.append(
+                {
+                    "type": "image_url",
+                    "image_url": load_image_data(uri),
+                }
+            )
+
+        # Combine all image contents into single user message
+        messages.append({"role": "user", "content": image_contents})
+
+        # Make the API request
+        return query_chat_completion(api_base_url, api_key, model_name, messages)
 
     return visual_describer
 
