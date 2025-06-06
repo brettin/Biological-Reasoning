@@ -1,10 +1,9 @@
 from typing import Callable, List, Union
 
-import httpx
 from toolregistry import Tool
 
 from .utils import load_image_data
-
+from ...utils import query_chat_completion
 
 def _get_visual_description(
     uris: Union[str, List[str]],
@@ -31,14 +30,7 @@ def _get_visual_description(
     Raises:
         TypeError: If `uris` is not a string or a list of strings.
         ValueError: If no image URIs are provided.
-        RuntimeError: If the API request fails with an HTTP error.
     """
-    api_url = f"{api_base_url}/chat/completions"
-    headers = {
-        "Content-Type": "application/json",
-        "Authorization": f"Bearer {api_key}",
-    }
-
     if isinstance(uris, str):
         uris = [uris]
     elif not isinstance(uris, list):
@@ -64,17 +56,9 @@ def _get_visual_description(
 
     # Combine all image contents into single user message
     messages.append({"role": "user", "content": image_contents})
-    payload = {"model": model_name, "messages": messages}
 
-    try:
-        response = httpx.post(api_url, json=payload, headers=headers, timeout=600)
-        response.raise_for_status()
-        result = response.json()
-        return result.get("choices", [{}])[0].get("message", {}).get("content", "")
-    except httpx.HTTPStatusError as e:
-        raise RuntimeError(
-            f"Failed to get visual description: {e.response.text}"
-        ) from e
+    # Delegate API call to helper function
+    return query_chat_completion(api_base_url, api_key, model_name, messages)
 
 
 def visual_describer_factory(
