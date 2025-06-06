@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 from toolregistry import ToolRegistry
 from toolregistry.hub import WebSearchGoogle
 
-from .layers.a import ParametricMemory
+from .layers.a.parametric_memory import ParametricMemory
 from .layers.b import visual_describer_factory
 
 
