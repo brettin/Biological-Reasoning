@@ -4,26 +4,9 @@ from dotenv import load_dotenv
 from toolregistry import ToolRegistry
 from toolregistry.hub import WebSearchGoogle
 
-from .layers.a.parametric_memory import parametric_memory_factory
-from .layers.b import visual_describer_factory
-
-
-class ReasoningMode:
-    """
-    Base class that encapsulate general reasoning mode elements and methods
-    """
-
-    def __init__(
-        self, layer_a: ToolRegistry, layer_b: ToolRegistry, layer_c: ToolRegistry
-    ):
-        self._merged_layers = ToolRegistry()
-        self._merged_layers.merge(layer_a)
-        self._merged_layers.merge(layer_b)
-        self._merged_layers.merge(layer_c)
-
-    @property
-    def layers(self) -> ToolRegistry:
-        return self._merged_layers
+from ..layers.a.parametric_memory import parametric_memory_factory
+from ..layers.b import visual_describer_factory
+from .basics import ReasoningMode
 
 
 class ExampleReasoningMode(ReasoningMode):

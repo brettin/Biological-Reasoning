@@ -20,10 +20,6 @@ class ReasoningMode:
         self.layer_c = layer_c
 
     @property
-    def sys_prompt(self) -> str:
-        return self._sys_prompt
-
-    @property
     def layers(self) -> ToolRegistry:
         """
         Present the merged layers as a single ToolRegistry instance.
