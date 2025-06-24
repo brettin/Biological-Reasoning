@@ -1,11 +1,10 @@
 from dataclasses import asdict, dataclass
-from pprint import pprint
 from typing import Any, Dict, List
 
 from cicada.core import MultiModalModel, PromptBuilder
 from openai.types.chat.chat_completion_message import ChatCompletionMessage
 
-from .reasoning_modes import ExampleReasoningMode, ReasoningMode
+from .reasoning.example_reasoning import ExampleReasoningMode, ReasoningMode
 
 
 @dataclass
@@ -34,16 +33,36 @@ class Coordinator:
         self._reasoning_mode: ReasoningMode = None
         self.system_prompt = system_prompt
 
-    def set_reasoning_mode(self, reasoning_mode: ReasoningMode) -> None:
+    # TODO: we may need a method called determine_reasoning_mode. It could be simply a llm query to score the query against definition of each reasoning mode, then select the one with the highest score. But we need a collection of reasoning modes to test and develop this method.
+
+    @property
+    def reasoning_mode(self) -> ReasoningMode:
+        return self._reasoning_mode
+
+    @reasoning_mode.setter
+    def reasoning_mode(self, reasoning_mode: ReasoningMode) -> None:
+        """
+        Set the reasoning mode for the coordinator.
+        This will update the system prompt and the tools available to the coordinator.
+        """
         self._reasoning_mode = reasoning_mode
 
     def query(self, messages: List[ChatCompletionMessage], stream: bool = False) -> str:
-        # prepend system prompt
-        messages = [{"role": "system", "content": self.system_prompt}] + messages
+        # prepend system prompt to messages.
+        # if a reasoning mode is set, use reasoning mode's system prompt if available.
+        # otherwise, use the default system prompt as a fallback.
+        messages = [
+            {
+                "role": "system",
+                "content": self.reasoning_mode.sys_prompt
+                if self.reasoning_mode
+                else self.system_prompt,
+            }
+        ] + messages
 
         response = self._core.query(
             messages=messages,
-            tools=self._reasoning_mode.layers if self._reasoning_mode else None,
+            tools=self.reasoning_mode.layers if self.reasoning_mode else None,
             stream=stream,
         )
         return response["content"]
@@ -73,7 +92,7 @@ if __name__ == "__main__":
     )
 
     # set example
-    coordinator.set_reasoning_mode(ExampleReasoningMode())
+    coordinator.reasoning_mode = ExampleReasoningMode()
 
     pb = PromptBuilder()
     pb.add_user_message("what tools do you have access to?")
