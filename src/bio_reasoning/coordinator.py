@@ -1,5 +1,5 @@
 from dataclasses import asdict, dataclass
-from typing import Any, Dict, List
+from typing import Any, Dict, Optional, Sequence
 
 from cicada.core import MultiModalModel, PromptBuilder
 from openai.types.chat.chat_completion_message import ChatCompletionMessage
@@ -30,13 +30,15 @@ class Coordinator:
         system_prompt: str = "You are a helpful assistant.",
     ) -> None:
         self._core = MultiModalModel(**config.to_dict())
-        self._reasoning_mode: ReasoningMode = None
+        self._reasoning_mode: Optional[ReasoningMode] = None
         self.system_prompt = system_prompt
 
     # TODO: we may need a method called determine_reasoning_mode. It could be simply a llm query to score the query against definition of each reasoning mode, then select the one with the highest score. But we need a collection of reasoning modes to test and develop this method.
 
     @property
     def reasoning_mode(self) -> ReasoningMode:
+        if self._reasoning_mode is None:
+            raise ValueError("Reasoning mode is not set.")
         return self._reasoning_mode
 
     @reasoning_mode.setter
@@ -47,7 +49,11 @@ class Coordinator:
         """
         self._reasoning_mode = reasoning_mode
 
-    def query(self, messages: List[ChatCompletionMessage], stream: bool = False) -> str:
+    def query(
+        self,
+        messages: Sequence[ChatCompletionMessage | dict[str, str]],
+        stream: bool = False,
+    ) -> str:
         # prepend system prompt to messages.
         # if a reasoning mode is set, use reasoning mode's system prompt if available.
         # otherwise, use the default system prompt as a fallback.
@@ -58,7 +64,7 @@ class Coordinator:
                 if self.reasoning_mode
                 else self.system_prompt,
             }
-        ] + messages
+        ] + list(messages)
 
         response = self._core.query(
             messages=messages,
