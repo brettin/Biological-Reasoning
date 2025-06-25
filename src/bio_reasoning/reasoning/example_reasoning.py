@@ -33,9 +33,9 @@ class ExampleReasoningMode(ReasoningMode):
         # ============ define layer a ============
         # layer A is the parametric memory of a general large language model (LLM), capturing broadly applicable knowledge pre-trained or fine-tuned into its weights.
         parametric_memory = parametric_memory_factory(
-            api_key=os.getenv("API_KEY"),
-            api_base_url=os.getenv("BASE_URL"),
-            model_name=os.getenv("MODEL_NAME"),
+            api_key=os.getenv("API_KEY", "default_api_key"),
+            api_base_url=os.getenv("BASE_URL", "https://default-base-url.com"),
+            model_name=os.getenv("MODEL_NAME", "default_model_name"),
             system_prompt="You are an expert in biology. You are given a question and you need to answer it with the best of your knowledge.",
         )
 
@@ -47,8 +47,8 @@ class ExampleReasoningMode(ReasoningMode):
         system_prompt = "You are professional biologist with specialty in image analysis. Please describe the image in detail."
 
         visual_describer = visual_describer_factory(
-            api_key=os.getenv("API_KEY"),
-            api_base_url=os.getenv("BASE_URL"),
+            api_key=os.getenv("API_KEY", "sk-xxxxxx"),
+            api_base_url=os.getenv("BASE_URL", "https://api.openai.com/v1"),
             model_name=os.getenv("MODEL_NAME", "gpt-4.1-mini"),
             system_prompt=system_prompt,
         )
