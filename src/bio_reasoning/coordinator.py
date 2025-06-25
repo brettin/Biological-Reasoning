@@ -107,7 +107,7 @@ if __name__ == "__main__":
     config = Configuration(
         api_key=os.getenv("API_KEY", "sk-xxxxxxxxx"),
         api_base_url=os.getenv("BASE_URL", "https://api.openai.com/v1"),
-        model_name=os.getenv("MODEL_NAME", "gpt-4.1-mini"),
+        model_name=os.getenv("MODEL_NAME", "gpt-4.1"),
     )
     coordinator = Coordinator(
         config=config,
