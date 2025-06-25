@@ -2,6 +2,7 @@ from dataclasses import asdict, dataclass
 from typing import Any, Dict, Optional, Sequence
 
 from cicada.core import MultiModalModel, PromptBuilder
+from loguru import logger
 from openai.types.chat.chat_completion_message import ChatCompletionMessage
 
 from .reasoning.example_reasoning import ExampleReasoningMode, ReasoningMode
@@ -15,7 +16,28 @@ class Configuration:
     stream: bool = True
 
     def to_dict(self) -> Dict[str, Any]:
-        return asdict(self)
+        dict_repr = asdict(self)
+        return dict_repr
+
+    def __str__(self) -> str:
+        """
+        This is a hack to make the Configuration object printable.
+        """
+        return str(self.to_dict())
+
+    def __repr__(self) -> str:
+        """
+        This is a hack to make the Configuration object printable.
+        """
+        return self.__str__()
+
+    # what's the method to override for **config unpacking?
+    def __getitem__(self, key: str) -> Any:
+        """
+        This is a hack to make the Configuration object unpackable.
+        For example, we can use **config to unpack the Configuration object.
+        """
+        return getattr(self, key)
 
 
 class Coordinator:
@@ -29,6 +51,7 @@ class Coordinator:
         config: Configuration,
         system_prompt: str = "You are a helpful assistant.",
     ) -> None:
+        logger.debug(config)
         self._core = MultiModalModel(**config.to_dict())
         self._reasoning_mode: Optional[ReasoningMode] = None
         self.system_prompt = system_prompt
@@ -77,9 +100,9 @@ class Coordinator:
 if __name__ == "__main__":
     import os
 
-    import dotenv
+    from dotenv import load_dotenv
 
-    dotenv.load_dotenv()  # Load environment variables from .env file
+    load_dotenv()  # Load environment variables from .env file
 
     config = Configuration(
         api_key=os.getenv("API_KEY", "sk-xxxxxxxxx"),
