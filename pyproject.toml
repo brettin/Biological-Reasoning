@@ -1,11 +1,10 @@
-[build-system]
-requires = ["setuptools>=42", "wheel"]
-build-backend = "setuptools.build_meta"
-
 [project]
-name = "bio-reasoning"
+name = "bio-reasoning" # we shall import from bio_reasoning
 version = "0.1.0"
-authors = [{ name = "Thomas Brettin", email = "brettint@gmail.com" }]
+authors = [
+    { name = "Thomas Brettin", email = "brettint@gmail.com" },
+    { name = "Peng Ding", email = "oaklight@gmx.com" },
+]
 description = "Biological Reasoning System"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -18,15 +17,19 @@ classifiers = [
 ]
 dependencies = [
     "openai>=1.79.0",
-    "cicada-agent>=0.7.4",
+    "cicada-agent>=0.7.4",  # pending, we might want only a subset of the cicada-agent
     "loguru>=0.7.3",
     "httpx>=0.28.1",
-    "toolregistry>=0.4.12",
+    "toolregistry>=0.4.12", # if we want to use mcp, we have to use python>=3.10. This is a upstream issue of mcp, instead of toolregistry
     "python-dotenv>=1.1.0",
 ]
 
 [project.optional-dependencies]
-dev = ["mypy>=1.14.1", "build>=1.2.2.post1", "twine>=6.1.0"]
+dev = ["pyright>=1.1.402", "ruff>=0.12", "build>=1.2.2.post1", "twine>=6.1.0"]
 
 [tool.setuptools.packages.find]
-where = ["."]
+where = ["src"]
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
