@@ -9,7 +9,7 @@ from .utils import load_image_data
 def visual_describer_factory(
     api_key: str,
     api_base_url: str,
-    model_name: str = "gpt-4.1-mini",
+    model_name: str = "gpt-4.1",
     system_prompt: Optional[str] = None,
 ) -> Callable[[Union[str, List[str]], str], str]:
     """
@@ -18,7 +18,7 @@ def visual_describer_factory(
     Args:
         api_key (str): The API key for authentication.
         api_base_url (str): The base URL of the API providing the visual description service.
-        model_name (str, optional): Name of the model. Defaults to 'gpt-4.1-mini'.
+        model_name (str, optional): Name of the model. Defaults to 'gpt-4.1'.
         system_prompt (str, optional): A prompt to set the system context. Defaults to None.
 
     Returns:
@@ -87,7 +87,7 @@ if __name__ == "__main__":
     visual_describer = visual_describer_factory(
         api_key=os.getenv("API_KEY", ""),
         api_base_url=os.getenv("BASE_URL", ""),
-        model_name=os.getenv("MODEL_NAME", "gpt-4.1-mini"),
+        model_name=os.getenv("MODEL_NAME", "gpt-4.1"),
         system_prompt=system_prompt,
     )
 
