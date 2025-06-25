@@ -76,9 +76,9 @@ if __name__ == "__main__":
     dotenv.load_dotenv()  # Load environment variables from .env file
 
     config = Configuration(
-        api_key=os.getenv("API_KEY"),
-        api_base_url=os.getenv("BASE_URL"),
-        model_name=os.getenv("MODEL_NAME"),
+        api_key=os.getenv("API_KEY", "sk-xxxxxxxxx"),
+        api_base_url=os.getenv("BASE_URL", "https://api.openai.com/v1"),
+        model_name=os.getenv("MODEL_NAME", "gpt-4.1-mini"),
     )
     coordinator = Coordinator(
         config=config,
