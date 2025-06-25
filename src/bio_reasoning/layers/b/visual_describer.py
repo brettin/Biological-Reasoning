@@ -1,16 +1,16 @@
-from typing import Callable, List, Union
+from typing import Callable, List, Optional, Union
 
 from toolregistry import Tool
 
-from .utils import load_image_data
 from ...utils import query_chat_completion
+from .utils import load_image_data
 
 
 def visual_describer_factory(
     api_key: str,
     api_base_url: str,
     model_name: str = "gpt-4.1-mini",
-    system_prompt: str = None,
+    system_prompt: Optional[str] = None,
 ) -> Callable[[Union[str, List[str]], str], str]:
     """
     Factory function to create a visual description function with provided configuration.
@@ -57,7 +57,7 @@ def visual_describer_factory(
             messages.append({"role": "user", "content": user_prompt})
 
         # Load and attach image data
-        image_contents = []
+        image_contents: List[dict[str, str]] = []
         for uri in uris:
             image_contents.append(
                 {
@@ -85,8 +85,8 @@ if __name__ == "__main__":
     system_prompt = "You are professional biologist with specialty in image analysis. Please describe the image in detail."
 
     visual_describer = visual_describer_factory(
-        api_key=os.getenv("API_KEY"),
-        api_base_url=os.getenv("BASE_URL"),
+        api_key=os.getenv("API_KEY", ""),
+        api_base_url=os.getenv("BASE_URL", ""),
         model_name=os.getenv("MODEL_NAME", "gpt-4.1-mini"),
         system_prompt=system_prompt,
     )
