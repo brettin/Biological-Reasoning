@@ -16,6 +16,15 @@ Quickly start using Bio-Reasoning by installing it with this command:
 pip install bio-reasoning
 ```
 
+```{toctree}
+:caption: Documentation
+:hidden:
+
+usage/index
+examples/index
+api/index
+```
+
 ## Citation
 
 If you use ToolRegistry in your research or project, please consider cite it as:
