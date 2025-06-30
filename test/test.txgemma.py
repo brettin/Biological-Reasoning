@@ -47,7 +47,7 @@ task_names=[]
 for task_name, value in tdc_prompts_json.items():
     task_names.append(task_name)
     if input_type in value:
-        TDC_PROMPT = tdc_prompts_json[task_name].replace(input_type, drug_smiles)
+        TDC_PROMPT = tdc_prompts_json[task_name].replace(input_type, args.drug_smiles)
         print("User: ")
         print(TDC_PROMPT)
 
