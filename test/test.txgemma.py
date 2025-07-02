@@ -9,10 +9,14 @@ parser.add_argument("--port", type=int, default=8000,
                     help="port number, default 8000")
 parser.add_argument("--host", type=str, default="localhost",
 		    help="host name, default localhost")
-parser.add_argument("--model", type=str, default="mistralai/Mixtral-8x7B-Instruct-v0.1",
-                    help="repo/model, default mistralai/Mixtral-8x7B-Instruct-v0.1")
+parser.add_argument("--model", type=str, default="google/txgemma-27b-chat",
+                    help="repo/model, default google/txgemma-27b-chat")
 parser.add_argument("--key", type=str, default="EMPTY",
         help="the key passed to the vllm entrypoint when it was started")
+parser.add_argument("--drug_smiles", type=str, default="CN1C(=O)CN=C(C2=CCCCC2)c2cc(Cl)ccc21",
+                    help="drug_smiles, default CN1C(=O)CN=C(C2=CCCCC2)c2cc(Cl)ccc21")
+parser.add_argument("--target_amino_acid_sequence", type=str, default="",
+                    help="target_amino_acid_sequence, default empty")
 
 args = parser.parse_args()
 print(f'using host: {args.host}')
@@ -43,7 +47,7 @@ task_names=[]
 for task_name, value in tdc_prompts_json.items():
     task_names.append(task_name)
     if input_type in value:
-        TDC_PROMPT = tdc_prompts_json[task_name].replace(input_type, drug_smiles)
+        TDC_PROMPT = tdc_prompts_json[task_name].replace(input_type, args.drug_smiles)
         print("User: ")
         print(TDC_PROMPT)
 
