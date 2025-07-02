@@ -47,6 +47,33 @@ git clone https://github.com/brettin/biological-reasoning.git
 cd biological-reasoning
 pip install .
 ```
+
+### Development Installation
+
+For developers who want to contribute to the project or work with the latest source code, use the editable installation method:
+
+```bash
+# Create a new conda environment
+conda create -n bio_reason python=3.12
+conda activate bio_reason
+
+# Verify pip location (should be in the conda environment)
+which pip
+
+# Install in editable mode
+pip install --editable .
+```
+
+#### What does `pip install --editable .` do?
+
+The `--editable` flag (or `-e`) installs the package in "editable" or "development" mode. This means:
+
+- **Live Code Changes**: Any changes you make to the source code in the `src/` directory will be immediately available without reinstalling the package
+- **Development Workflow**: Perfect for active development where you're frequently modifying code
+- **Symlink Installation**: Creates a link to your source code rather than copying files to the site-packages directory
+- **Version Control Friendly**: Your changes are tracked in your local git repository and can be easily committed
+
+This is the recommended approach for developers who plan to modify the codebase or contribute to the project.
 <!-- 
 #### Installing from Source with Extra Support Modules
 
