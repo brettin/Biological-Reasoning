@@ -1,0 +1,36 @@
+graph TD
+    UserInput[["User Input"]] --> Govern
+    Govern[["Root (User Input "Modified")"]] --> Objective1
+    Govern --> Objective2
+    Govern --> Objective3
+    
+    Objective1[["Objective<br>reasoning_mode<br>objective"]] -- "reason()" --> NewObjectiveA
+    Objective1 -- "reason()" --> SubConclusion1
+    
+    NewObjectiveA[["Objective<br>reasoning_mode<br>objective"]] -- "reason()" --> SubConclusion1
+    
+    Objective2[["Objective<br>reasoning_mode<br>objective"]] -- "reason()" --> NewObjectiveB
+    Objective2 -- "reason()" --> SubConclusion2
+    
+    NewObjectiveB[["Objective<br>reasoning_mode<br>objective"]] -- "reason()" --> SubConclusion2
+    
+    Objective3[["Objective<br>reasoning_mode<br>objective"]] -- "reason()" --> NewObjectiveC
+    Objective3 -- "reason()" --> SubConclusion3
+    
+    NewObjectiveC[["Objective<br>reasoning_mode<br>objective"]] -- "reason()" --> SubConclusion3
+    
+    SubConclusion1[["Terminal Sub-Conclusion 1"]] --> FinalConclusion
+    SubConclusion2[["Terminal Sub-Conclusion 2"]] --> FinalConclusion
+    SubConclusion3[["Terminal Sub-Conclusion 3"]] --> FinalConclusion
+    
+    FinalConclusion[["Final Integrated Conclusion"]] --> OutputNode[["Output"]]
+
+    classDef root fill:#4A90E2, stroke:#333, color:#fff;
+    classDef objective fill:#7ED321, stroke:#333;
+    classDef conclusion fill:#FF8800, stroke:#333;
+    classDef final fill:#595959, stroke:#fff;
+    
+    class Govern root;
+    class Objective1,Objective2,Objective3,NewObjectiveA,NewObjectiveB,NewObjectiveC objective;
+    class SubConclusion1,SubConclusion2,SubConclusion3 conclusion;
+    class FinalConclusion,OutputNode final;
