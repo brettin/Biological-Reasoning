@@ -13,8 +13,10 @@ class ReasoningMode:
         layer_b: ToolRegistry,
         layer_c: ToolRegistry,
         sys_prompt: str,
+        name: str = "Generic Reasoning Mode",
     ):
         self.sys_prompt = sys_prompt
+        self.name = name
         self.layer_a = layer_a
         self.layer_b = layer_b
         self.layer_c = layer_c
