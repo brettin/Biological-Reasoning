@@ -40,7 +40,7 @@ Given the user's question and relevant molecular or cellular entities, your task
 4. Conclude by synthesizing how these steps produce the observed outcome.
 
 User question: {question}  
-Entities/Data: {data}""",
+Data: {data}""",
 
     "systems": """You are a Systems Biology Reasoning Expert.  
 Given the user's question and any network or multi-omic data, your task is to:
@@ -112,3 +112,44 @@ Given the user's question and any cross-species data, your task is to:
 User question: {question}  
 Data: {data}"""
 } 
+
+
+def create_reasoning_mode_from_prompt(mode_name: str, **kwargs) -> "ReasoningMode":
+    """
+    Create a reasoning mode using a prompt from REASONING_PROMPTS.
+    
+    Args:
+        mode_name: Name of the reasoning mode (must be in REASONING_PROMPTS)
+        **kwargs: Additional arguments to pass to the reasoning mode constructor
+    
+    Returns:
+        A ReasoningMode instance with the specified prompt
+    """
+    if mode_name not in REASONING_PROMPTS:
+        raise ValueError(f"Unknown reasoning mode: {mode_name}. Available modes: {list(REASONING_PROMPTS.keys())}")
+    
+    # Import here to avoid circular imports
+    from .basics import ReasoningMode
+    from toolregistry import ToolRegistry
+    
+    # Create empty tool registries (can be populated later)
+    layer_a = ToolRegistry(name=f"Layer A - {mode_name}")
+    layer_b = ToolRegistry(name=f"Layer B - {mode_name}")
+    layer_c = ToolRegistry(name=f"Layer C - {mode_name}")
+    
+    # Get the prompt template and format it
+    prompt_template = REASONING_PROMPTS[mode_name]
+    
+    # For now, use placeholder values for question and data
+    # In a real implementation, these would be filled in dynamically
+    formatted_prompt = prompt_template.format(question="[USER_QUESTION]", data="[USER_DATA]")
+    
+    # Create the reasoning mode
+    return ReasoningMode(
+        layer_a=layer_a,
+        layer_b=layer_b,
+        layer_c=layer_c,
+        sys_prompt=formatted_prompt,
+        name=f"{mode_name.title()} Reasoning Expert",
+        **kwargs
+    ) 

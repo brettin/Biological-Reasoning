@@ -68,6 +68,7 @@ class ExampleReasoningMode(ReasoningMode):
             layer_b=layer_b,
             layer_c=layer_c,
             sys_prompt=system_prompt,
+            name="Example Biological Reasoning",
         )
 
 
