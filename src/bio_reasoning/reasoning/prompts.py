@@ -1,155 +1,258 @@
-"""Prompts for different biological reasoning modes."""
+"""Factory functions and triage system for biological reasoning modes."""
 
-REASONING_PROMPTS = {
-    "phylogenetic": """You are a Phylogenetic Reasoning Expert.  
-Given the user's question and any provided sequence or species data, your task is to:
-1. Gather homologous sequences or taxa relevant to the query.
-2. Perform multiple sequence alignment or retrieve an existing alignment.
-3. Construct or retrieve a phylogenetic tree.
-4. Interpret branching order, clade support, and divergence times to answer why and how the trait or gene evolved.
-5. Clearly explain which species share common ancestry and what that implies for the user's question.
+import re
+from typing import Dict, Type, Optional
 
-User question: {question}  
-Data: {data}""",
-
-    "teleonomic": """You are an Adaptive-Function (Teleonomic) Reasoning Expert.  
-Given the user's question and the trait or organism in question, your task is to:
-1. Identify the biological feature and hypothesize its function in terms of fitness advantage.
-2. Draw on known case studies or analogous adaptations to frame a plausible "in-order-to" explanation.
-3. Cite evidence (literature or databases) supporting that the trait enhances survival or reproduction.
-4. Note any alternative hypotheses or trade-offs that might challenge the adaptive explanation.
-
-User question: {question}  
-Trait/Context: {data}""",
-
-    "tradeoff": """You are a Trade-off Reasoning Expert.  
-Given the user's question and any quantitative or qualitative data, your task is to:
-1. Identify the two (or more) competing biological traits or functions.
-2. Describe how resources (energy, time, materials) are allocated between them.
-3. If data are available, quantify the relationship (e.g., correlation, cost-benefit curve).
-4. Explain why an optimal intermediate balance exists, and discuss evolutionary or physiological implications.
-
-User question: {question}  
-Data: {data}""",
-
-    "mechanistic": """You are a Mechanistic Reasoning Expert.  
-Given the user's question and relevant molecular or cellular entities, your task is to:
-1. Decompose the phenomenon into its component molecules, interactions, or steps.
-2. Map out the causal chain (e.g., receptor → signal transduction → effector).
-3. Describe each step in detail, citing known reactions, structures, or regulatory mechanisms.
-4. Conclude by synthesizing how these steps produce the observed outcome.
-
-User question: {question}  
-Data: {data}""",
-
-    "systems": """You are a Systems Biology Reasoning Expert.  
-Given the user's question and any network or multi-omic data, your task is to:
-1. Identify the network components (genes, proteins, metabolites) and their interactions.
-2. Determine which feedback loops or network motifs drive the emergent behavior.
-3. If appropriate, simulate or qualitatively analyze dynamic behavior (e.g., oscillation, bistability).
-4. Explain how the system-level properties arise from the interplay of parts.
-
-User question: {question}  
-Data: {data}""",
-
-    "probabilistic": """You are a Probabilistic Reasoning Expert.  
-Given the user's question and relevant statistical or population data, your task is to:
-1. Identify sources of biological variability (e.g., mutation rates, stochastic gene expression).
-2. Formulate a probabilistic model (e.g., Bayesian network, Markov process) as needed.
-3. Calculate or retrieve probabilities, confidence intervals, or likelihoods relevant to the question.
-4. Interpret these probabilities to inform decision-making or prediction, and discuss uncertainty.
-
-User question: {question}  
-Data: {data}""",
-
-    "spatial": """You are a Spatial Reasoning Expert.  
-Given the user's question and any images, structures, or spatial patterns, your task is to:
-1. Identify the relevant spatial scale (molecular, cellular, tissue, ecological).
-2. Explain how geometry, localization, or diffusion shape the phenomenon.
-3. If provided an image or 3D structure, describe key spatial features and their functional roles.
-4. Relate spatial organization to the user's specific question.
-
-User question: {question}  
-Data: {data}""",
-
-    "temporal": """You are a Temporal Reasoning Expert.  
-Given the user's question and any time-series data or process descriptions, your task is to:
-1. Identify the sequence of events, phases, or cycles involved.
-2. Quantify or describe rates, delays, and durations.
-3. If appropriate, model the dynamics (e.g., using ODEs or time-series analysis).
-4. Explain how timing and order produce the observed behavior or phenotype.
-
-User question: {question}  
-Data: {data}""",
-
-    "homeostatic": """You are a Homeostatic Reasoning Expert.  
-Given the user's question and any physiological variables, your task is to:
-1. Identify the controlled variable and its setpoint or normal range.
-2. Describe the sensors, control centers, and effectors that form the feedback loop.
-3. Explain how negative (or positive) feedback maintains stability.
-4. Discuss what happens when the loop fails or is perturbed.
-
-User question: {question}  
-Data: {data}""",
-
-    "developmental": """You are a Developmental Biology Reasoning Expert.  
-Given the user's question and any gene-expression or lineage data, your task is to:
-1. Trace the sequence of developmental events (induction, differentiation, morphogenesis).
-2. Identify key regulatory genes or signals and their spatial-temporal expression.
-3. Explain how cell-cell interactions and gradients drive tissue formation.
-4. Relate these processes to the question (e.g., mutant phenotype, organogenesis).
-
-User question: {question}  
-Data: {data}""",
-
-    "comparative": """You are a Comparative Biology Reasoning Expert.  
-Given the user's question and any cross-species data, your task is to:
-1. Identify relevant model organisms or systems analogous to the one under study.
-2. Map homologous or analogous features (genes, structures, behaviors) between species.
-3. Draw inferences or generate hypotheses by analogy, noting conserved versus divergent aspects.
-4. Cite comparative studies that support or refine the analogy.
-
-User question: {question}  
-Data: {data}"""
-} 
+from .basics import ReasoningMode
+from .phylogenetic_reasoning import PhylogeneticReasoningMode
+from .teleonomic_reasoning import TeleonomicReasoningMode
+from .tradeoff_reasoning import TradeoffReasoningMode
+from .mechanistic_reasoning import MechanisticReasoningMode
+from .systems_reasoning import SystemsReasoningMode
+from .probabilistic_reasoning import ProbabilisticReasoningMode
+from .spatial_reasoning import SpatialReasoningMode
+from .temporal_reasoning import TemporalReasoningMode
+from .homeostatic_reasoning import HomeostaticReasoningMode
+from .developmental_reasoning import DevelopmentalReasoningMode
+from .comparative_reasoning import ComparativeReasoningMode
+from .example_reasoning import ExampleReasoningMode
 
 
-def create_reasoning_mode_from_prompt(mode_name: str, **kwargs) -> "ReasoningMode":
+# Registry of available reasoning modes
+REASONING_MODE_REGISTRY: Dict[str, Type[ReasoningMode]] = {
+    "phylogenetic": PhylogeneticReasoningMode,
+    "teleonomic": TeleonomicReasoningMode,
+    "tradeoff": TradeoffReasoningMode,
+    "mechanistic": MechanisticReasoningMode,
+    "systems": SystemsReasoningMode,
+    "probabilistic": ProbabilisticReasoningMode,
+    "spatial": SpatialReasoningMode,
+    "temporal": TemporalReasoningMode,
+    "homeostatic": HomeostaticReasoningMode,
+    "developmental": DevelopmentalReasoningMode,
+    "comparative": ComparativeReasoningMode,
+    "example": ExampleReasoningMode,
+}
+
+
+def create_reasoning_mode(mode_name: str) -> ReasoningMode:
     """
-    Create a reasoning mode using a prompt from REASONING_PROMPTS.
+    Factory function to create a reasoning mode instance.
     
     Args:
-        mode_name: Name of the reasoning mode (must be in REASONING_PROMPTS)
-        **kwargs: Additional arguments to pass to the reasoning mode constructor
+        mode_name: Name of the reasoning mode (must be in REASONING_MODE_REGISTRY)
     
     Returns:
-        A ReasoningMode instance with the specified prompt
+        A ReasoningMode instance of the specified type
+        
+    Raises:
+        ValueError: If the mode_name is not recognized
     """
-    if mode_name not in REASONING_PROMPTS:
-        raise ValueError(f"Unknown reasoning mode: {mode_name}. Available modes: {list(REASONING_PROMPTS.keys())}")
+    if mode_name not in REASONING_MODE_REGISTRY:
+        available_modes = list(REASONING_MODE_REGISTRY.keys())
+        raise ValueError(f"Unknown reasoning mode: {mode_name}. Available modes: {available_modes}")
     
-    # Import here to avoid circular imports
-    from .basics import ReasoningMode
-    from toolregistry import ToolRegistry
+    reasoning_class = REASONING_MODE_REGISTRY[mode_name]
+    return reasoning_class()
+
+
+def get_available_modes() -> list[str]:
+    """
+    Get a list of all available reasoning mode names.
     
-    # Create empty tool registries (can be populated later)
-    layer_a = ToolRegistry(name=f"Layer A - {mode_name}")
-    layer_b = ToolRegistry(name=f"Layer B - {mode_name}")
-    layer_c = ToolRegistry(name=f"Layer C - {mode_name}")
+    Returns:
+        List of available reasoning mode names
+    """
+    return list(REASONING_MODE_REGISTRY.keys())
+
+
+# Triage keywords for each reasoning mode
+TRIAGE_KEYWORDS = {
+    "phylogenetic": [
+        "phylogeny", "phylogenetic", "evolution", "evolutionary", "tree", "clade", "ancestor", 
+        "ancestral", "divergence", "speciation", "homolog", "ortholog", "paralog", "sequence alignment",
+        "molecular clock", "common ancestor", "branching", "monophyletic", "paraphyletic"
+    ],
+    "teleonomic": [
+        "function", "adaptive", "adaptation", "fitness", "advantage", "benefit", "purpose", 
+        "survival", "reproduction", "natural selection", "selective pressure", "evolutionary advantage",
+        "why evolved", "what for", "in order to", "functional significance"
+    ],
+    "tradeoff": [
+        "tradeoff", "trade-off", "cost", "benefit", "allocation", "resource", "constraint", 
+        "optimization", "balance", "competing", "conflict", "compromise", "energy budget",
+        "life history", "pareto", "optimal"
+    ],
+    "mechanistic": [
+        "mechanism", "molecular", "pathway", "signaling", "cascade", "interaction", "binding",
+        "enzyme", "protein", "gene expression", "regulation", "transcription", "translation",
+        "how does", "step by step", "process", "causal chain", "biochemical"
+    ],
+    "systems": [
+        "network", "system", "systems biology", "emergent", "feedback", "loop", "circuit",
+        "module", "motif", "topology", "connectivity", "robustness", "dynamics", "oscillation",
+        "bistability", "multi-scale", "integration"
+    ],
+    "probabilistic": [
+        "probability", "statistical", "stochastic", "random", "variability", "uncertainty",
+        "distribution", "bayesian", "likelihood", "confidence", "variance", "noise",
+        "population", "frequency", "risk", "chance"
+    ],
+    "spatial": [
+        "spatial", "location", "position", "geometry", "structure", "3d", "localization",
+        "diffusion", "gradient", "pattern", "morphology", "shape", "arrangement", "organization",
+        "tissue", "cellular", "molecular structure"
+    ],
+    "temporal": [
+        "time", "temporal", "dynamics", "kinetics", "rate", "timing", "sequence", "order",
+        "phase", "cycle", "rhythm", "circadian", "oscillation", "delay", "duration",
+        "time course", "chronology", "development over time"
+    ],
+    "homeostatic": [
+        "homeostasis", "regulation", "control", "feedback", "setpoint", "maintain", "stability",
+        "physiological", "sensor", "effector", "negative feedback", "positive feedback",
+        "equilibrium", "steady state", "perturbation"
+    ],
+    "developmental": [
+        "development", "developmental", "embryo", "morphogenesis", "differentiation", "induction",
+        "lineage", "fate", "specification", "determination", "organogenesis", "gastrulation",
+        "neurulation", "segmentation", "axis formation", "gene regulatory network"
+    ],
+    "comparative": [
+        "comparative", "comparison", "model organism", "species", "cross-species", "homology",
+        "analogy", "conservation", "divergence", "similarity", "difference", "ortholog",
+        "mouse", "fly", "worm", "yeast", "zebrafish", "across species"
+    ]
+}
+
+
+def triage_reasoning_mode(user_question: str, context: str = "") -> str:
+    """
+    Automatically determine the most appropriate reasoning mode based on user input.
     
-    # Get the prompt template and format it
-    prompt_template = REASONING_PROMPTS[mode_name]
+    Args:
+        user_question: The user's question or task description
+        context: Additional context that might help with triage (optional)
     
-    # For now, use placeholder values for question and data
-    # In a real implementation, these would be filled in dynamically
-    formatted_prompt = prompt_template.format(question="[USER_QUESTION]", data="[USER_DATA]")
+    Returns:
+        The name of the recommended reasoning mode
+    """
+    # Combine question and context for analysis
+    text_to_analyze = f"{user_question} {context}".lower()
     
-    # Create the reasoning mode
-    return ReasoningMode(
-        layer_a=layer_a,
-        layer_b=layer_b,
-        layer_c=layer_c,
-        sys_prompt=formatted_prompt,
-        name=f"{mode_name.title()} Reasoning Expert",
-        **kwargs
-    ) 
+    # Score each reasoning mode based on keyword matches
+    mode_scores = {}
+    
+    for mode_name, keywords in TRIAGE_KEYWORDS.items():
+        score = 0
+        for keyword in keywords:
+            # Use word boundaries to avoid partial matches
+            pattern = r'\b' + re.escape(keyword.lower()) + r'\b'
+            matches = len(re.findall(pattern, text_to_analyze))
+            score += matches
+        
+        mode_scores[mode_name] = score
+    
+    # Find the mode with the highest score
+    if not mode_scores or max(mode_scores.values()) == 0:
+        # If no keywords match, default to mechanistic reasoning
+        return "mechanistic"
+    
+    # Return the mode with the highest score
+    best_mode = max(mode_scores, key=mode_scores.get)
+    return best_mode
+
+
+def triage_with_confidence(user_question: str, context: str = "") -> tuple[str, float]:
+    """
+    Determine the most appropriate reasoning mode with a confidence score.
+    
+    Args:
+        user_question: The user's question or task description
+        context: Additional context that might help with triage (optional)
+    
+    Returns:
+        Tuple of (recommended_mode, confidence_score)
+        confidence_score is between 0 and 1
+    """
+    # Combine question and context for analysis
+    text_to_analyze = f"{user_question} {context}".lower()
+    
+    # Score each reasoning mode based on keyword matches
+    mode_scores = {}
+    total_keywords_found = 0
+    
+    for mode_name, keywords in TRIAGE_KEYWORDS.items():
+        score = 0
+        for keyword in keywords:
+            # Use word boundaries to avoid partial matches
+            pattern = r'\b' + re.escape(keyword.lower()) + r'\b'
+            matches = len(re.findall(pattern, text_to_analyze))
+            score += matches
+            total_keywords_found += matches
+        
+        mode_scores[mode_name] = score
+    
+    # Find the mode with the highest score
+    if not mode_scores or max(mode_scores.values()) == 0:
+        # If no keywords match, default to mechanistic reasoning with low confidence
+        return "mechanistic", 0.1
+    
+    best_mode = max(mode_scores, key=mode_scores.get)
+    best_score = mode_scores[best_mode]
+    
+    # Calculate confidence based on the proportion of keywords that matched the best mode
+    # and how much it dominates other modes
+    if total_keywords_found == 0:
+        confidence = 0.1
+    else:
+        # Base confidence on the proportion of total matches
+        base_confidence = best_score / total_keywords_found
+        
+        # Boost confidence if this mode clearly dominates
+        second_best_score = sorted(mode_scores.values(), reverse=True)[1] if len(mode_scores) > 1 else 0
+        if best_score > second_best_score * 2:
+            base_confidence = min(1.0, base_confidence * 1.5)
+        
+        confidence = min(1.0, base_confidence)
+    
+    return best_mode, confidence
+
+
+def get_mode_description(mode_name: str) -> str:
+    """
+    Get a description of what a reasoning mode is designed for.
+    
+    Args:
+        mode_name: Name of the reasoning mode
+        
+    Returns:
+        Description of the reasoning mode's purpose
+        
+    Raises:
+        ValueError: If the mode_name is not recognized
+    """
+    descriptions = {
+        "phylogenetic": "Analyzes evolutionary relationships, phylogenetic trees, and ancestral connections",
+        "teleonomic": "Examines adaptive functions, fitness advantages, and evolutionary purposes",
+        "tradeoff": "Studies competing biological traits, resource allocation, and optimization",
+        "mechanistic": "Investigates molecular mechanisms, pathways, and step-by-step processes",
+        "systems": "Analyzes biological networks, emergent properties, and system-level behaviors",
+        "probabilistic": "Handles statistical analysis, uncertainty quantification, and stochastic processes",
+        "spatial": "Examines spatial patterns, geometric relationships, and structural organization",
+        "temporal": "Studies time-dependent processes, dynamics, and temporal sequences",
+        "homeostatic": "Analyzes regulatory mechanisms, feedback control, and physiological stability",
+        "developmental": "Investigates developmental processes, morphogenesis, and gene regulation",
+        "comparative": "Performs cross-species analysis, model organism studies, and evolutionary comparisons",
+        "example": "Demonstrates the general reasoning framework with basic biological analysis"
+    }
+    
+    if mode_name not in descriptions:
+        available_modes = list(descriptions.keys())
+        raise ValueError(f"Unknown reasoning mode: {mode_name}. Available modes: {available_modes}")
+    
+    return descriptions[mode_name]
+
+
+# Legacy support - keep the old function name for backward compatibility
+create_reasoning_mode_from_prompt = create_reasoning_mode
