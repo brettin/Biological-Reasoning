@@ -1,0 +1,54 @@
+# CELS Server Configurations for robin_testing_v2.py
+# Last updated: 2025-04-20
+
+servers:
+  # Local Argo Server (your setup)
+  - server: "localhost"
+    shortname: "gpt41"
+    openai_api_key: "brettin"
+    openai_api_base: "http://localhost:44497/v1"
+    openai_model: "argo:gpt-4.1"
+
+  - server: "localhost"
+    shortname: "gpt4o"
+    openai_api_key: "brettin"
+    openai_api_base: "http://localhost:44497/v1"
+    openai_model: "argo:gpt-4o"
+
+  - server: "localhost"
+    shortname: "gpto1"
+    openai_api_key: "brettin"
+    openai_api_base: "http://localhost:44497/v1"
+    openai_model: "argo:gpt-o1"
+
+  - server: "localhost"
+    shortname: "gpto3"
+    openai_api_key: "brettin"
+    openai_api_base: "http://localhost:44497/v1"
+    openai_model: "argo:gpt-o3"
+
+  - server: "localhost"
+    shortname: "gpto4mini"
+    openai_api_key: "brettin"
+    openai_api_base: "http://localhost:44497/v1"
+    openai_model: "argo:gpt-o4-mini"
+
+  # CELS Servers
+  - server: "rbh101.cels.anl.gov"
+    shortname: "scout"
+    openai_api_key: "CELS"
+    openai_api_base: "http://66.55.67.65:80/v1"
+    openai_model: "scout"
+
+  - server: "hcdgx2.cels.anl.gov"
+    shortname: "qwen"
+    openai_api_key: "CELS"
+    openai_api_base: "http://103.101.203.226:80/v1"
+    openai_model: "Qwen"
+
+  # OpenAI Direct (for comparison/fallback)
+  - server: "api.openai.com"
+    shortname: "openai_gpt41"
+    openai_api_key: "${OPENAI_API_KEY}"
+    openai_api_base: "https://api.openai.com/v1"
+    openai_model: "gpt-4.1"
