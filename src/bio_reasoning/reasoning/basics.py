@@ -1,3 +1,5 @@
+from typing import List, Optional
+
 from toolregistry import ToolRegistry
 
 
@@ -14,12 +16,16 @@ class ReasoningMode:
         layer_c: ToolRegistry,
         sys_prompt: str,
         name: str = "Generic Reasoning Mode",
+        keywords: Optional[List[str]] = None,
+        name_canonical: Optional[str] = None,
     ):
         self.sys_prompt = sys_prompt
         self.name = name
         self.layer_a = layer_a
         self.layer_b = layer_b
         self.layer_c = layer_c
+        self.keywords = keywords or []
+        self.name_canonical = name_canonical or name.lower().replace(" ", "_")
 
     @property
     def layers(self) -> ToolRegistry:
