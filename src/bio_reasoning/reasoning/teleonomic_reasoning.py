@@ -48,6 +48,26 @@ class TeleonomicReasoningMode(ReasoningMode):
         # TODO: Add external data sources for teleonomic analysis
         # Examples: trait databases, evolutionary literature, comparative genomics databases
 
+        # Define keywords for this reasoning mode
+        keywords = [
+            "function",
+            "adaptive",
+            "adaptation",
+            "fitness",
+            "advantage",
+            "benefit",
+            "purpose",
+            "survival",
+            "reproduction",
+            "natural selection",
+            "selective pressure",
+            "evolutionary advantage",
+            "why evolved",
+            "what for",
+            "in order to",
+            "functional significance",
+        ]
+
         # Initialize the reasoning mode
         super().__init__(
             layer_a=layer_a,
@@ -55,6 +75,8 @@ class TeleonomicReasoningMode(ReasoningMode):
             layer_c=layer_c,
             sys_prompt=system_prompt,
             name="Teleonomic Reasoning Expert",
+            keywords=keywords,
+            name_canonical="teleonomic",
         )
 
 

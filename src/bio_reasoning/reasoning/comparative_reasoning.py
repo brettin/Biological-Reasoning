@@ -48,6 +48,28 @@ class ComparativeReasoningMode(ReasoningMode):
         # TODO: Add external data sources for comparative analysis
         # Examples: comparative databases, model organism databases, ortholog databases
 
+        # Define keywords for this reasoning mode
+        keywords = [
+            "comparative",
+            "comparison",
+            "model organism",
+            "species",
+            "cross-species",
+            "homology",
+            "analogy",
+            "conservation",
+            "divergence",
+            "similarity",
+            "difference",
+            "ortholog",
+            "mouse",
+            "fly",
+            "worm",
+            "yeast",
+            "zebrafish",
+            "across species",
+        ]
+
         # Initialize the reasoning mode
         super().__init__(
             layer_a=layer_a,
@@ -55,6 +77,8 @@ class ComparativeReasoningMode(ReasoningMode):
             layer_c=layer_c,
             sys_prompt=system_prompt,
             name="Comparative Biology Reasoning Expert",
+            keywords=keywords,
+            name_canonical="comparative",
         )
 
 

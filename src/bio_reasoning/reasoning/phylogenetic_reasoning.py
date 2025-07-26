@@ -49,6 +49,13 @@ class PhylogeneticReasoningMode(ReasoningMode):
         # TODO: Add external data sources for phylogenetic analysis
         # Examples: NCBI databases, phylogenetic databases, sequence repositories
 
+        # Define keywords for this reasoning mode
+        keywords = [
+            "phylogeny", "phylogenetic", "evolution", "evolutionary", "tree", "clade", "ancestor",
+            "ancestral", "divergence", "speciation", "homolog", "ortholog", "paralog", "sequence alignment",
+            "molecular clock", "common ancestor", "branching", "monophyletic", "paraphyletic"
+        ]
+
         # Initialize the reasoning mode
         super().__init__(
             layer_a=layer_a,
@@ -56,6 +63,8 @@ class PhylogeneticReasoningMode(ReasoningMode):
             layer_c=layer_c,
             sys_prompt=system_prompt,
             name="Phylogenetic Reasoning Expert",
+            keywords=keywords,
+            name_canonical="phylogenetic",
         )
 
 

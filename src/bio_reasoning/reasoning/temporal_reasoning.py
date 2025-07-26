@@ -48,6 +48,13 @@ class TemporalReasoningMode(ReasoningMode):
         # TODO: Add external data sources for temporal analysis
         # Examples: time-course databases, circadian databases, developmental timing data
 
+        # Define keywords for this reasoning mode
+        keywords = [
+            "time", "temporal", "dynamics", "kinetics", "rate", "timing", "sequence", "order",
+            "phase", "cycle", "rhythm", "circadian", "oscillation", "delay", "duration",
+            "time course", "chronology", "development over time"
+        ]
+
         # Initialize the reasoning mode
         super().__init__(
             layer_a=layer_a,
@@ -55,6 +62,8 @@ class TemporalReasoningMode(ReasoningMode):
             layer_c=layer_c,
             sys_prompt=system_prompt,
             name="Temporal Reasoning Expert",
+            keywords=keywords,
+            name_canonical="temporal",
         )
 
 

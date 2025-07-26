@@ -48,6 +48,13 @@ class HomeostaticReasoningMode(ReasoningMode):
         # TODO: Add external data sources for homeostatic analysis
         # Examples: physiological databases, regulatory pathway databases, clinical data
 
+        # Define keywords for this reasoning mode
+        keywords = [
+            "homeostasis", "regulation", "control", "feedback", "setpoint", "maintain", "stability",
+            "physiological", "sensor", "effector", "negative feedback", "positive feedback",
+            "equilibrium", "steady state", "perturbation"
+        ]
+
         # Initialize the reasoning mode
         super().__init__(
             layer_a=layer_a,
@@ -55,6 +62,8 @@ class HomeostaticReasoningMode(ReasoningMode):
             layer_c=layer_c,
             sys_prompt=system_prompt,
             name="Homeostatic Reasoning Expert",
+            keywords=keywords,
+            name_canonical="homeostatic",
         )
 
 

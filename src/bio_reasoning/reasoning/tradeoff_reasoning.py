@@ -48,6 +48,13 @@ class TradeoffReasoningMode(ReasoningMode):
         # TODO: Add external data sources for trade-off analysis
         # Examples: life history databases, physiological data, evolutionary ecology literature
 
+        # Define keywords for this reasoning mode
+        keywords = [
+            "tradeoff", "trade-off", "cost", "benefit", "allocation", "resource", "constraint",
+            "optimization", "balance", "competing", "conflict", "compromise", "energy budget",
+            "life history", "pareto", "optimal"
+        ]
+
         # Initialize the reasoning mode
         super().__init__(
             layer_a=layer_a,
@@ -55,6 +62,8 @@ class TradeoffReasoningMode(ReasoningMode):
             layer_c=layer_c,
             sys_prompt=system_prompt,
             name="Trade-off Reasoning Expert",
+            keywords=keywords,
+            name_canonical="tradeoff",
         )
 
 

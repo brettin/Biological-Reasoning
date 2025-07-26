@@ -48,6 +48,13 @@ class SystemsReasoningMode(ReasoningMode):
         # TODO: Add external data sources for systems biology
         # Examples: STRING database, BioCyc, KEGG, Reactome, omics databases
 
+        # Define keywords for this reasoning mode
+        keywords = [
+            "network", "system", "systems biology", "emergent", "feedback", "loop", "circuit",
+            "module", "motif", "topology", "connectivity", "robustness", "dynamics", "oscillation",
+            "bistability", "multi-scale", "integration"
+        ]
+
         # Initialize the reasoning mode
         super().__init__(
             layer_a=layer_a,
@@ -55,6 +62,8 @@ class SystemsReasoningMode(ReasoningMode):
             layer_c=layer_c,
             sys_prompt=system_prompt,
             name="Systems Biology Reasoning Expert",
+            keywords=keywords,
+            name_canonical="systems",
         )
 
 

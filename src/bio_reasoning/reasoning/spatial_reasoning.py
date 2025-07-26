@@ -48,6 +48,27 @@ class SpatialReasoningMode(ReasoningMode):
         # TODO: Add external data sources for spatial analysis
         # Examples: PDB, microscopy databases, spatial omics databases
 
+        # Define keywords for this reasoning mode
+        keywords = [
+            "spatial",
+            "location",
+            "position",
+            "geometry",
+            "structure",
+            "3d",
+            "localization",
+            "diffusion",
+            "gradient",
+            "pattern",
+            "morphology",
+            "shape",
+            "arrangement",
+            "organization",
+            "tissue",
+            "cellular",
+            "molecular structure",
+        ]
+
         # Initialize the reasoning mode
         super().__init__(
             layer_a=layer_a,
@@ -55,6 +76,8 @@ class SpatialReasoningMode(ReasoningMode):
             layer_c=layer_c,
             sys_prompt=system_prompt,
             name="Spatial Reasoning Expert",
+            keywords=keywords,
+            name_canonical="spatial",
         )
 
 

@@ -62,6 +62,11 @@ class ExampleReasoningMode(ReasoningMode):
         layer_c.register_from_class(WebSearchGoogle())
 
         # ============ define the reasoning mode ============
+        # Define keywords for this reasoning mode (example mode has general keywords)
+        keywords = [
+            "example", "demo", "test", "general", "basic", "biology", "biological"
+        ]
+        
         # use keyword arguments to pass the layers to the reasoning mode, instead of positional arguments, to avoid mistakes.
         super().__init__(
             layer_a=layer_a,
@@ -69,6 +74,8 @@ class ExampleReasoningMode(ReasoningMode):
             layer_c=layer_c,
             sys_prompt=system_prompt,
             name="Example Biological Reasoning",
+            keywords=keywords,
+            name_canonical="example",
         )
 
 

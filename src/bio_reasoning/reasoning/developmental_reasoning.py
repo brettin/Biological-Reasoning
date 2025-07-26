@@ -48,6 +48,26 @@ class DevelopmentalReasoningMode(ReasoningMode):
         # TODO: Add external data sources for developmental analysis
         # Examples: developmental databases, gene expression atlases, model organism databases
 
+        # Define keywords for this reasoning mode
+        keywords = [
+            "development",
+            "developmental",
+            "embryo",
+            "morphogenesis",
+            "differentiation",
+            "induction",
+            "lineage",
+            "fate",
+            "specification",
+            "determination",
+            "organogenesis",
+            "gastrulation",
+            "neurulation",
+            "segmentation",
+            "axis formation",
+            "gene regulatory network",
+        ]
+
         # Initialize the reasoning mode
         super().__init__(
             layer_a=layer_a,
@@ -55,6 +75,8 @@ class DevelopmentalReasoningMode(ReasoningMode):
             layer_c=layer_c,
             sys_prompt=system_prompt,
             name="Developmental Biology Reasoning Expert",
+            keywords=keywords,
+            name_canonical="developmental",
         )
 
 

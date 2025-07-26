@@ -48,6 +48,13 @@ class ProbabilisticReasoningMode(ReasoningMode):
         # TODO: Add external data sources for probabilistic analysis
         # Examples: population databases, statistical repositories, genomic variation databases
 
+        # Define keywords for this reasoning mode
+        keywords = [
+            "probability", "statistical", "stochastic", "random", "variability", "uncertainty",
+            "distribution", "bayesian", "likelihood", "confidence", "variance", "noise",
+            "population", "frequency", "risk", "chance"
+        ]
+
         # Initialize the reasoning mode
         super().__init__(
             layer_a=layer_a,
@@ -55,6 +62,8 @@ class ProbabilisticReasoningMode(ReasoningMode):
             layer_c=layer_c,
             sys_prompt=system_prompt,
             name="Probabilistic Reasoning Expert",
+            keywords=keywords,
+            name_canonical="probabilistic",
         )
 
 

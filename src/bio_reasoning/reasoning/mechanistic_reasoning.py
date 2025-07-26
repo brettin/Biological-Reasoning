@@ -48,6 +48,13 @@ class MechanisticReasoningMode(ReasoningMode):
         # TODO: Add external data sources for mechanistic analysis
         # Examples: PDB, UniProt, KEGG pathways, Reactome
 
+        # Define keywords for this reasoning mode
+        keywords = [
+            "mechanism", "molecular", "pathway", "signaling", "cascade", "interaction", "binding",
+            "enzyme", "protein", "gene expression", "regulation", "transcription", "translation",
+            "how does", "step by step", "process", "causal chain", "biochemical"
+        ]
+
         # Initialize the reasoning mode
         super().__init__(
             layer_a=layer_a,
@@ -55,6 +62,8 @@ class MechanisticReasoningMode(ReasoningMode):
             layer_c=layer_c,
             sys_prompt=system_prompt,
             name="Mechanistic Reasoning Expert",
+            keywords=keywords,
+            name_canonical="mechanistic",
         )
 
 
