@@ -1,3 +1,4 @@
+import json
 from dataclasses import asdict, dataclass
 from typing import Any, Dict, List, Optional, Sequence
 
@@ -6,9 +7,7 @@ from loguru import logger
 from openai.types.chat.chat_completion_message import ChatCompletionMessage
 
 from .reasoning.example_reasoning import ExampleReasoningMode, ReasoningMode
-from .reasoning.prompts import create_reasoning_mode_from_prompt, REASONING_PROMPTS
-
-import json
+from .reasoning.registry import create_reasoning_mode, get_available_modes, registry
 
 
 @dataclass
@@ -77,10 +76,12 @@ class Coordinator:
         self._reasoning_mode = reasoning_mode
         self._reasoning_modes = [reasoning_mode] if reasoning_mode else []
 
-    def construct_system_prompt(self, messages=None, user_question_override=None) -> str:
+    def construct_system_prompt(
+        self, messages=None, user_question_override=None
+    ) -> str:
         """Construct system prompt combining default and reasoning mode prompts, filling in [USER_QUESTION]."""
         combined_prompt = self.system_prompt + "\n\n"
-        
+
         # Extract user question from messages or use override
         user_question = ""
         if user_question_override:
@@ -91,23 +92,25 @@ class Coordinator:
                 if m.get("role") == "user":
                     user_question = m.get("content", "")
                     break
-        
+
         # Add comprehensive introduction about reasoning composition
         if self._reasoning_modes:
             reasoning_names = [mode.name for mode in self._reasoning_modes]
             combined_prompt += f"You are a composition of many forms of reasoning. These include {', '.join(reasoning_names)}.\n\n"
-            
+
             # Add each reasoning mode with its full description
             combined_prompt += "Each reasoning form provides specialized expertise:\n\n"
             for mode in self._reasoning_modes:
                 # Extract the reasoning type from the mode name (e.g., "Spatial Reasoning Expert" -> "spatial")
                 reasoning_type = mode.name.lower().replace(" reasoning expert", "")
-                
+
                 # Fill in [USER_QUESTION] in the sys_prompt
-                sys_prompt_filled = mode.sys_prompt.replace("[USER_QUESTION]", user_question)
-                
+                sys_prompt_filled = mode.sys_prompt.replace(
+                    "[USER_QUESTION]", user_question
+                )
+
                 combined_prompt += f'"{reasoning_type}": """{sys_prompt_filled}"""\n\n'
-        
+
         return combined_prompt
 
     def query(
@@ -137,7 +140,7 @@ class Coordinator:
         """Get combined tools from all reasoning modes."""
         if not self._reasoning_modes:
             return None
-        
+
         # For now, use the first reasoning mode's tools (backward compatibility)
         # TODO: Implement proper tool merging from multiple reasoning modes
         return self._reasoning_modes[0].layers if self._reasoning_modes else None
@@ -190,21 +193,23 @@ if __name__ == "__main__":
                 logger.debug(f"Raw mode names argument: '{mode_names_raw}'")
                 mode_names = [name.strip() for name in mode_names_raw.split(",")]
                 logger.info(f"Using reasoning modes: {mode_names}")
-                # Create reasoning modes from prompts.py
+                # Create reasoning modes from registry
                 reasoning_modes = []
                 for mode_name in mode_names:
                     try:
-                        mode = create_reasoning_mode_from_prompt(mode_name)
+                        mode = create_reasoning_mode(mode_name)
                         reasoning_modes.append(mode)
                     except ValueError as e:
-                        logger.warning(f"Skipping unknown reasoning mode '{mode_name}': {e}")
+                        logger.warning(
+                            f"Skipping unknown reasoning mode '{mode_name}': {e}"
+                        )
                 coordinator.set_reasoning_modes(reasoning_modes)
             else:
-                # Default to all reasoning modes from prompts.py
-                logger.info("Using all available reasoning modes from prompts.py")
+                # Default to all reasoning modes from registry
+                logger.info("Using all available reasoning modes from registry")
                 reasoning_modes = []
-                for mode_name in REASONING_PROMPTS.keys():
-                    mode = create_reasoning_mode_from_prompt(mode_name)
+                for mode_name in get_available_modes():
+                    mode = create_reasoning_mode(mode_name)
                     reasoning_modes.append(mode)
                 coordinator.set_reasoning_modes(reasoning_modes)
         elif sys.argv[1] == "--user-question":
@@ -215,11 +220,11 @@ if __name__ == "__main__":
             else:
                 logger.warning("--user-question specified but no question provided")
     else:
-        # Default behavior - use all reasoning modes from prompts.py
-        logger.info("Using all available reasoning modes from prompts.py")
+        # Default behavior - use all reasoning modes from registry
+        logger.info("Using all available reasoning modes from registry")
         reasoning_modes = []
-        for mode_name in REASONING_PROMPTS.keys():
-            mode = create_reasoning_mode_from_prompt(mode_name)
+        for mode_name in get_available_modes():
+            mode = create_reasoning_mode(mode_name)
             reasoning_modes.append(mode)
         coordinator.set_reasoning_modes(reasoning_modes)
 
@@ -233,11 +238,13 @@ if __name__ == "__main__":
     )
     for message in pb.messages:
         logger.debug(json.dumps(message, indent=4))
-    
+
     # Show the constructed system prompt without making the API call
-    system_prompt = coordinator.construct_system_prompt(pb.messages, user_question_override)
+    system_prompt = coordinator.construct_system_prompt(
+        pb.messages, user_question_override
+    )
     logger.info("=== CONSTRUCTED SYSTEM PROMPT ===")
     logger.info(system_prompt)
     logger.info("=== END SYSTEM PROMPT ===")
-    
-    #coordinator.query(pb.messages, stream=True)
+
+    # coordinator.query(pb.messages, stream=True)
