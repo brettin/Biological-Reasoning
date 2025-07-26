@@ -62,6 +62,7 @@ class MechanisticReasoningMode(ReasoningMode):
             layer_c=layer_c,
             sys_prompt=system_prompt,
             name="Mechanistic Reasoning Expert",
+            description="Investigates molecular mechanisms, pathways, and step-by-step processes",
             keywords=keywords,
             name_canonical="mechanistic",
         )

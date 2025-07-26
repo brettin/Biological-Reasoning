@@ -62,6 +62,7 @@ class SystemsReasoningMode(ReasoningMode):
             layer_c=layer_c,
             sys_prompt=system_prompt,
             name="Systems Biology Reasoning Expert",
+            description="Analyzes biological networks, emergent properties, and system-level behaviors",
             keywords=keywords,
             name_canonical="systems",
         )

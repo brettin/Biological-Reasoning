@@ -75,6 +75,7 @@ class DevelopmentalReasoningMode(ReasoningMode):
             layer_c=layer_c,
             sys_prompt=system_prompt,
             name="Developmental Biology Reasoning Expert",
+            description="Investigates developmental processes, morphogenesis, and gene regulation",
             keywords=keywords,
             name_canonical="developmental",
         )

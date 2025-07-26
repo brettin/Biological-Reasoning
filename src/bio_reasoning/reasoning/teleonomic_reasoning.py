@@ -75,6 +75,7 @@ class TeleonomicReasoningMode(ReasoningMode):
             layer_c=layer_c,
             sys_prompt=system_prompt,
             name="Teleonomic Reasoning Expert",
+            description="Examines adaptive functions, fitness advantages, and evolutionary purposes",
             keywords=keywords,
             name_canonical="teleonomic",
         )

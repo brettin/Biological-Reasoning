@@ -76,6 +76,7 @@ class SpatialReasoningMode(ReasoningMode):
             layer_c=layer_c,
             sys_prompt=system_prompt,
             name="Spatial Reasoning Expert",
+            description="Examines spatial patterns, geometric relationships, and structural organization",
             keywords=keywords,
             name_canonical="spatial",
         )

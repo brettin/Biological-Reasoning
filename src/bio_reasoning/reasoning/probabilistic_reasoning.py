@@ -62,6 +62,7 @@ class ProbabilisticReasoningMode(ReasoningMode):
             layer_c=layer_c,
             sys_prompt=system_prompt,
             name="Probabilistic Reasoning Expert",
+            description="Handles statistical analysis, uncertainty quantification, and stochastic processes",
             keywords=keywords,
             name_canonical="probabilistic",
         )

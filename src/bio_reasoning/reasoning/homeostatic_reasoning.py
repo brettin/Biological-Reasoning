@@ -62,6 +62,7 @@ class HomeostaticReasoningMode(ReasoningMode):
             layer_c=layer_c,
             sys_prompt=system_prompt,
             name="Homeostatic Reasoning Expert",
+            description="Analyzes regulatory mechanisms, feedback control, and physiological stability",
             keywords=keywords,
             name_canonical="homeostatic",
         )

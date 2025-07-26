@@ -62,6 +62,7 @@ class TradeoffReasoningMode(ReasoningMode):
             layer_c=layer_c,
             sys_prompt=system_prompt,
             name="Trade-off Reasoning Expert",
+            description="Studies competing biological traits, resource allocation, and optimization",
             keywords=keywords,
             name_canonical="tradeoff",
         )

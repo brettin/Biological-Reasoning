@@ -77,6 +77,7 @@ class ComparativeReasoningMode(ReasoningMode):
             layer_c=layer_c,
             sys_prompt=system_prompt,
             name="Comparative Biology Reasoning Expert",
+            description="Performs cross-species analysis, model organism studies, and evolutionary comparisons",
             keywords=keywords,
             name_canonical="comparative",
         )

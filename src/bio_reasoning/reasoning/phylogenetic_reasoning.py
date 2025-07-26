@@ -63,6 +63,7 @@ class PhylogeneticReasoningMode(ReasoningMode):
             layer_c=layer_c,
             sys_prompt=system_prompt,
             name="Phylogenetic Reasoning Expert",
+            description="Analyzes evolutionary relationships, phylogenetic trees, and ancestral connections",
             keywords=keywords,
             name_canonical="phylogenetic",
         )

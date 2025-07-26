@@ -62,6 +62,7 @@ class TemporalReasoningMode(ReasoningMode):
             layer_c=layer_c,
             sys_prompt=system_prompt,
             name="Temporal Reasoning Expert",
+            description="Studies time-dependent processes, dynamics, and temporal sequences",
             keywords=keywords,
             name_canonical="temporal",
         )

@@ -74,6 +74,7 @@ class ExampleReasoningMode(ReasoningMode):
             layer_c=layer_c,
             sys_prompt=system_prompt,
             name="Example Biological Reasoning",
+            description="Demonstrates the general reasoning framework with basic biological analysis",
             keywords=keywords,
             name_canonical="example",
         )
