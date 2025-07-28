@@ -1,6 +1,19 @@
-# BioR5 Presentation Diagrams - Mermaid Version
+# BioR5 Presentation Visual Resources
 
-## 1. Reasoning Modes Overview (Slide 1)
+## Image File Mapping
+
+| Slide                                 | Image File                         | Content Description                                                         | Usage                   |
+| ------------------------------------- | ---------------------------------- | --------------------------------------------------------------------------- | ----------------------- |
+| **Slide 1: The Problem**              | `reasoning_examples.png`           | Reasoning modes overview - different problem types and reasoning approaches | Core slide (required)   |
+| **Slide 2: Our Solution**             | `current_model_vs_BioR5.png`       | Current AI vs BioR5 comparison diagram                                      | Core slide (required)   |
+| **Slide 3: Design Challenge**         | `reasoning_mode_to_layer_arch.png` | Reasoning mode to architecture layer mapping                                | Optional slide          |
+| **Slide 3: Three-Layer Architecture** | `architecture.png`                 | BioR5 three-layer architecture core diagram                                 | Core slide (required)   |
+| **Slide 4: Future Work**              | `triage_planner.png`               | Reasoning trace and divide-and-conquer scheduling                           | Core slide (required)   |
+| **Slide 6B: Development Boundaries**  | `team_role_and_dev_role.png`       | Team roles and development boundaries                                       | Optional detailed slide |
+
+## Mermaid Diagram Sources
+
+### 1. Reasoning Modes Overview (Slide 1)
 
 ```mermaid
 graph LR
@@ -15,7 +28,7 @@ graph LR
     style T4 fill:#fff3e0
 ```
 
-## 2. Current AI vs BioR5 Comparison (Slide 2)
+### 2. Current AI vs BioR5 Comparison (Slide 2)
 
 ```mermaid
 graph LR
@@ -37,7 +50,7 @@ style CA fill:#ffcdd2
 style BR fill:#c8e6c9
 ```
 
-## 3. Reasoning Mode to Architecture Mapping (Slide 3 Optional)
+### 3. Reasoning Mode to Architecture Mapping (Slide 3 Optional)
 
 ```mermaid
 graph TD
@@ -59,7 +72,7 @@ graph TD
     style D3 fill:#fce4ec
 ```
 
-## 4. Three-Layer Architecture Core Diagram (Slide 3 Core)
+### 4. Three-Layer Architecture Core Diagram (Slide 3 Core)
 
 ```mermaid
 graph TB
@@ -94,7 +107,7 @@ graph TB
     style RM fill:#fff3e0
 ```
 
-## 5. Reasoning Trace Diagram (Slide 4 Future Work)
+### 5. Reasoning Trace Diagram (Slide 4 Future Work)
 
 ```mermaid
 graph LR
@@ -130,7 +143,7 @@ graph LR
     style F fill:#c8e6c9
 ```
 
-## 6. Scalability Architecture Diagram (Optional)
+### 6. Team Roles and Development Boundaries (Optional)
 
 ```mermaid
 graph LR
@@ -165,23 +178,46 @@ graph LR
     style RMR fill:#f1f8e9
 ```
 
+## 8-Minute Core Presentation Strategy
+
+### Required Images (Core Content)
+
+1. `reasoning_examples.png` - Problem definition
+2. `current_model_vs_BioR5.png` - Solution comparison
+3. `architecture.png` - Three-layer architecture
+4. `triage_planner.png` - Future work
+
+### Optional Images (Time Permitting)
+
+5. `reasoning_mode_to_layer_arch.png` - Design challenge
+6. `team_role_and_dev_role.png` - Team collaboration
+
 ## Usage Instructions
 
-1. **Copy the corresponding Mermaid code** into your presentation tool
-2. **Online preview**: Use [Mermaid Live Editor](https://mermaid.live/) to preview effects
-3. **Export images**: Most Mermaid tools support exporting to PNG/SVG format
-4. **Marp integration**: If using Marp, you can directly embed these diagrams in markdown
+### For Static Images
 
-## Recommended Diagram Usage
+- All image files are located in the `figures/` folder
+- Preload all images in your presentation tool
+- The core 4 images are sufficient for an 8-minute presentation
+- Optional images can be used flexibly based on available time
+
+### For Mermaid Diagrams
+
+1. **Copy the corresponding Mermaid code** into your presentation tool
+2. **Online preview**: Use [Mermaid Live Editor](https://mermaid.live/) to preview
+3. **Export images**: Most Mermaid tools support PNG/SVG export
+4. **Marp integration**: Direct embedding in markdown presentations
+
+## Recommended Visual Flow
 
 **Core Presentation (8 minutes)**:
 
-- Diagram 1: Reasoning Modes Overview
-- Diagram 4: Three-Layer Architecture Core Diagram
-- Diagram 5: Reasoning Trace Diagram
+- Diagram 1: Reasoning Modes Overview → Problem identification
+- Diagram 2: Current AI vs BioR5 → Solution positioning
+- Diagram 4: Three-Layer Architecture → Technical approach
+- Diagram 5: Reasoning Trace → Future capabilities
 
-**Optional Supplements**:
+**Extended Presentation (12+ minutes)**:
 
-- Diagram 2: Current AI vs BioR5 Comparison
-- Diagram 3: Reasoning Mode Mapping
-- Diagram 6: Scalability Architecture
+- Add Diagram 3: Architecture mapping details
+- Add Diagram 6: Team collaboration model
