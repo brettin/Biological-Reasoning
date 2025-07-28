@@ -18,21 +18,23 @@ graph LR
 ## 2. Current AI vs BioR5 Comparison (Slide 2)
 
 ```mermaid
-graph TB
-    subgraph "Current AI"
-        CA[More Data + Bigger Model]
-        CA --> CAR[One Approach for All]
-    end
+graph LR
+subgraph "Current AI"
+direction LR
+CA[More Data + Bigger Model]
+CA --> CAR[One Approach for All]
+end
 
-    subgraph "BioR5"
-        BR[Reasoning-Mode-Aware]
-        BR --> BR1[Teleonomic: Evolutionary theory]
-        BR --> BR2[Mechanistic: Pathway analysis]
-        BR --> BR3[Different tools for different questions]
-    end
+subgraph "BioR5"
+direction LR
+BR[Reasoning-Mode-Aware]
+BR --> BR1[Teleonomic: Evolutionary theory]
+BR --> BR2[Mechanistic: Pathway analysis]
+BR --> BR3[Different tools for different questions]
+end
 
-    style CA fill:#ffcdd2
-    style BR fill:#c8e6c9
+style CA fill:#ffcdd2
+style BR fill:#c8e6c9
 ```
 
 ## 3. Reasoning Mode to Architecture Mapping (Slide 3 Optional)
@@ -95,28 +97,33 @@ graph TB
 ## 5. Reasoning Trace Diagram (Slide 4 Future Work)
 
 ```mermaid
-graph TD
+graph LR
     Q[Why do birds have hollow bones?] --> C[Coordinator]
 
     C --> O1[Objective 1: Evolutionary pressure]
     C --> O2[Objective 2: Bone mechanics]
     C --> O3[Objective 3: Flight integration]
+    C --> O4[Objective N: xxxxxxxx]
 
-    O1 --> R1[Evolutionary Reasoning]
-    O2 --> R2[Mechanistic Reasoning]
-    O3 --> R3[Systems Reasoning]
+    O1 --> R1(Evolutionary Reasoning)
+    O2 --> R2(Mechanistic Reasoning)
+    O3 --> R3(Systems Reasoning)
+    O4 --> R4(xxx Reasoning)
 
-    R1 --> T1[Tools: Phylogenetic DB, Evolution Models]
-    R2 --> T2[Tools: Structure Analysis, Physics Models]
-    R3 --> T3[Tools: Flight Simulation, Integration Analysis]
+    R1 --x T1[Tools: Phylogenetic DB, Evolution Models]
+    R2 --x T2[Tools: Structure Analysis, Physics Models]
+    R3 --x T3[Tools: Flight Simulation, Integration Analysis]
+    R4 --x T4[Tools: xxx, yyy, zzz]
 
     T1 --> A1[Result 1: Selection pressure for weight reduction]
     T2 --> A2[Result 2: Hollow structure maintains strength]
     T3 --> A3[Result 3: Enables efficient flight mechanics]
+    T4 --> A4[Result 4: xxxxxxxxxxxx]
 
     A1 --> F[Final Answer: Integrated explanation]
     A2 --> F
     A3 --> F
+    A4 --> F
 
     style Q fill:#fff3e0
     style C fill:#e1f5fe
