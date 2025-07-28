@@ -2,52 +2,51 @@
 
 **[Duration: 8 minutes - Core slides only]**
 
+**📊 images**: All image files are located in the [`figures/`](figures/) folder.
+
 ---
 
 ## **Slide 1: The Problem** ⏱️ **[1 min]**
 
-**[Show: Different reasoning mode icons]**
+**[Show: reasoning_examples.png]**
 
 "Biology isn't just about having lots of data.
 
 **The real challenge**: Biologists use **different modes of reasoning** for different questions:
 
-- **"Why does this trait exist?"** → Teleonomic reasoning
-- **"How does this process work?"** → Mechanistic reasoning
+- **"Why does this trait exist?"** → 🧬 Teleonomic reasoning
+- **"How does this process work?"** → ⚙️ Mechanistic reasoning
 
 **[OPTIONAL - Skip if running short]:**
 
-- **"What evolved from what?"** → Phylogenetic reasoning
-- **"What happens over time?"** → Temporal reasoning
+- **"What evolved from what?"** → 🌳 Phylogenetic reasoning
+- **"What happens over time?"** → ⏰ Temporal reasoning
 
 Current AI: One model, one approach.
 Biology: Eleven distinct reasoning modes, each with unique requirements."
 
 ---
 
-## **Slide 2: Why Current AI Falls Short**
+## **Slide 2: Our Solution** ⏱️ **[2 min]**
 
-**[Show: Current AI vs. Biological Reasoning Requirements]**
+**[Show: current_model_vs_BioR5.png]**
 
 **Current AI**: "More data + bigger model = better science"
 
-**Biological Reality**: Different questions need different approaches:
+**BioR5**: Different questions need different computational approaches.
 
-**Question**: "Why are finch beaks different shapes?"
+**Example**: "Why are finch beaks different shapes?"
 
-- **Teleonomic reasoning**: Each shape provides feeding advantage
-- **Requires**: Evolutionary theory + ecological data
-- **NOT**: Just sequence similarity or pattern matching
+- Needs evolutionary theory + ecological data
+- NOT just pattern matching
 
 **The Gap**: We need **reasoning-mode-aware** AI.
 
-**[Optional - Skip if running short]:**
+**[OPTIONAL - Skip if running short]:**
+**Example**: "How does insulin regulate glucose?"
 
-**Question**: "How does insulin regulate glucose?"
-
-- **Mechanistic reasoning**: Step-by-step pathway analysis
-- **Requires**: Biochemical pathways + causal networks
-- **NOT**: Just correlation in expression data
+- Needs biochemical pathways + causal networks
+- NOT just correlation in expression data
 
 ---
 
@@ -55,7 +54,7 @@ Biology: Eleven distinct reasoning modes, each with unique requirements."
 
 ## **Slide 3: The Design Challenge**
 
-**[Show: Reasoning Mode → Data → Architecture mapping]**
+**[Show: reasoning_mode_to_layer_arch.png]**
 
 **Key Insight**: Each reasoning mode needs different computational resources:
 
@@ -69,7 +68,7 @@ Biology: Eleven distinct reasoning modes, each with unique requirements."
 
 ## **Slide 3: Three-Layer Architecture** ⏱️ **[3 min - CORE CONTENT]**
 
-**[Show: Three-layer diagram]**
+**[Show: architecture.png]**
 
 **BioR5**: Map each reasoning mode to the right computational layer
 
@@ -137,7 +136,7 @@ Biology: Eleven distinct reasoning modes, each with unique requirements."
 
 ## **Slide 4: Future Work** ⏱️ **[1 min]**
 
-**[Show reasoning trace diagram]**
+**[Show: triage_planner.png]**
 
 **Next milestone**: Divide-and-conquer scheduling
 
@@ -193,6 +192,8 @@ Results merge into final answer. Reasoning is traceable and further divisible.
 ---
 
 ## **Slide 6B: Development Boundaries** ⏱️ **[OPTIONAL]**
+
+**[Show: team_role_and_dev_role.png]**
 
 **Clear separation**:
 
