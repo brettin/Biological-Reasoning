@@ -16,8 +16,8 @@ footer: "Lightning Talk - TPC25"
 ## A Three-Layer Tool-Calling Architecture
 
 **Peng Ding**
-University of Chicago
 Argonne National Laboratory
+University of Chicago
 
 ---
 
