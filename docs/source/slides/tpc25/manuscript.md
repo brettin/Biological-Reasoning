@@ -1,25 +1,26 @@
 # Lightning Talk Manuscript: Biological Reasoning System (BioR5)
 
-**[Duration: 8-10 minutes]**
+**[Duration: 8 minutes - Core slides only]**
 
 ---
 
-## **Slide 1: The Hidden Complexity of Biological Reasoning**
+## **Slide 1: The Problem** ⏱️ **[1 min]**
 
 **[Show: Different reasoning mode icons]**
 
-"Biology isn't just about having lots of data types.
+"Biology isn't just about having lots of data.
 
-**The real challenge**: Biologists use **fundamentally different modes of reasoning** for different questions:
+**The real challenge**: Biologists use **different modes of reasoning** for different questions:
 
 - **"Why does this trait exist?"** → Teleonomic reasoning
 - **"How does this process work?"** → Mechanistic reasoning
+
+**[OPTIONAL - Skip if running short]:**
+
 - **"What evolved from what?"** → Phylogenetic reasoning
 - **"What happens over time?"** → Temporal reasoning
 
-**Each mode requires different data, different frameworks, different thinking patterns.**
-
-Current AI: One model, one reasoning approach.
+Current AI: One model, one approach.
 Biology: Eleven distinct reasoning modes, each with unique requirements."
 
 ---
@@ -28,7 +29,7 @@ Biology: Eleven distinct reasoning modes, each with unique requirements."
 
 **[Show: Current AI vs. Biological Reasoning Requirements]**
 
-**Current AI Assumption**: "More data + bigger model = better science"
+**Current AI**: "More data + bigger model = better science"
 
 **Biological Reality**: Different questions need different approaches:
 
@@ -38,99 +39,79 @@ Biology: Eleven distinct reasoning modes, each with unique requirements."
 - **Requires**: Evolutionary theory + ecological data
 - **NOT**: Just sequence similarity or pattern matching
 
+**The Gap**: We need **reasoning-mode-aware** AI.
+
+**[Optional - Skip if running short]:**
+
 **Question**: "How does insulin regulate glucose?"
 
 - **Mechanistic reasoning**: Step-by-step pathway analysis
 - **Requires**: Biochemical pathways + causal networks
 - **NOT**: Just correlation in expression data
 
-**The Gap**: We need **reasoning-mode-aware** AI, not just multimodal AI.
-
 ---
 
-## **Slide 3: The Core Design Challenge**
+## **[OPTIONAL SLIDE - Skip if time is short]**
+
+## **Slide 3: The Design Challenge**
 
 **[Show: Reasoning Mode → Data → Architecture mapping]**
 
-**Key Insight from BioR5**: Each reasoning mode has specific requirements for:
+**Key Insight**: Each reasoning mode needs different computational resources:
 
-1. **What knowledge should be in model weights?**
+1. **Model weights**: General principles ✓, Dynamic details ✗
+2. **Specialized models**: Image analysis, structure prediction
+3. **External resources**: Growing databases, simulations
 
-   - Phylogenetic: General evolutionary principles ✓
-   - Mechanistic: All pathway details ✗ (too dynamic)
-
-2. **What needs specialized models?**
-
-   - Spatial: Image analysis, structure prediction
-   - Temporal: Time-series analysis, oscillation detection
-
-3. **What must stay external?**
-   - Comparative: Growing databases, regulated patient data
-   - Systems: Heavy simulations, network analysis
-
-**This isn't just engineering - it's a fundamental mismatch between biological reasoning and current AI architecture.**
+**This is a fundamental mismatch between biological reasoning and current AI.**
 
 ---
 
-## **Slide 4: A Reasoning-Driven Architecture**
+## **Slide 3: Three-Layer Architecture** ⏱️ **[3 min - CORE CONTENT]**
 
-**[Show: Three-layer diagram with reasoning modes mapped]**
+**[Show: Three-layer diagram]**
 
-**BioR5's Innovation**: Map each reasoning mode to appropriate computational layer
+**BioR5**: Map each reasoning mode to the right computational layer
 
-**Layer A (LLM)**: "The Generalist Biologist"
+**Layer A - "The Generalist"**: LLM with specialized prompts
 
-- Holds principles that work across biology
-- _"Negative feedback loops maintain homeostasis"_
+- General biological principles and knowledge
+- Different prompts → Different knowledge distillation
 
-**Layer B (Specialist Models)**: "The Lab Instruments"
+**Layer B - "The Specialists"**: Specialized models
 
-- Handles modality-specific analysis
-- _Image analysis for spatial patterns, sequence models for phylogeny_
+- Protein structure prediction, image analysis
+- Handle non-text data
 
-**Layer C (External Resources)**: "The Library & Compute Center"
+**Layer C - "The Library"**: External resources
 
-- Dynamic data and heavy computation
-- _Daily-updated genomes, simulation engines_
+- Live databases (PubMed, NCBI), computational tools
+- Always current data, or restricted access
 
-**Key**: The **reasoning mode** determines which layers get activated.
-
----
-
-## **Slide 5: Layer A - Knowledge in Weights**
-
-**Implementation**: `parametric_memory` tool with specialized prompts
-
-**How it works**: Different prompts extract different reasoning knowledge from LLM weights
-
-**Specialized prompt examples**:
-
-- **Mechanistic prompt**: _"Explain the step-by-step biochemical pathway..."_
-- **Teleonomic prompt**: _"What adaptive advantage does this trait provide..."_
-- **Homeostatic prompt**: _"Identify the feedback loops that maintain..."_
-- **Phylogenetic prompt**: _"Based on evolutionary relationships..."_
-
-**What's encoded in weights**:
-
-- Fundamental biological principles across all reasoning modes
-- Cross-modal knowledge patterns
-- Scientific language and conceptual frameworks
-
-**Key insight**: Same LLM, different prompting strategies → Different reasoning outputs
-
-**Current status**: Implemented and tested across 11 reasoning modes
+**Key**: The **reasoning mode** determines which layers activate and which tools to provide.
 
 ---
 
-## **Layer B: Bespoke Foundation Models (The Specialists)**
+## **[DETAILED SLIDES - Use only if time allows]**
 
-**Role**: Handle non-textual data that Layer A cannot process
+## **Slide 4A: Layer A Details** ⏱️ **[OPTIONAL - 1 min]**
 
-**Key capabilities**:
+**Implementation**: `parametric_memory` with specialized prompts
 
-- **Protein sequence models**: Interpret amino acid sequences, predict structure
-- **Imaging models**: Analyze microscopy, histology, cellular patterns
-- **Graph networks**: Gene regulatory networks, pathway analysis
+**Examples**:
+
+- **Mechanistic**: _"Explain step-by-step pathway..."_
+- **Evolutionary**: _"What adaptive advantage..."_
+
+**Key insight**: Same LLM, different prompts → Different knowledge distillation
+
+**Status**: Implemented across 11 reasoning modes
+
+---
+
+## **Slide 4B: Layer B Details** ⏱️ **[OPTIONAL - 1 min]**
+
+**Role**: Handle modality beyond pure text
 
 **Examples**:
 
@@ -138,89 +119,117 @@ Biology: Eleven distinct reasoning modes, each with unique requirements."
 - Cell image classifier for developmental pattern analysis
 - Sequence alignment models for phylogenetic analysis
 
-**Integration**: LLM calls these models, gets results back
-
-- _"Send DNA sequence to sequence model → get motif analysis"_
-- _"Send histology image to vision model → get tissue classification"_
-
-**Why needed**: Each biological data type needs specialized processing
+**Integration**: Specialized models packaged as callable tools
 
 ---
 
-## **Layer C: External Knowledge & Tools (The Dynamic Layer)**
+## **Slide 4C: Layer C Details** ⏱️ **[OPTIONAL - 1 min]**
 
-**Role**: Handle resources too large, dynamic, or regulated for model weights
+**Major categories**:
 
-**Three categories**:
+- **📊 Databases**: NCBI, PubMed, clinical data, websearch
+- **⚙️ Computational Tools**: BLAST, phylogenetic builders
+- **🕸️ Knowledge Graphs**: Gene Ontology, Reactome
 
-**📊 Massive Databases**: NCBI, KEGG, PubMed, clinical databases
-**⚙️ Computational Tools**: Phylogenetic tree builders, ODE solvers, BLAST
-**🕸️ Knowledge Graphs**: Gene Ontology, Reactome pathways, BioKG
-
-**Real-time examples**:
-
-- Query: _"Latest genomic variants"_ → NCBI API call
-- Query: _"Protein interaction network"_ → Reactome database
-- Query: _"Statistical analysis"_ → External R/Python tools
-
-**Why external**:
-
-- Data grows daily (literature, genomes)
-- Privacy regulations (patient data)
-- Computational intensity (simulations)
-
-**Result**: Always current, verifiable, scalable knowledge
+**Why external**: Data grows daily, privacy regulations, computational intensity
 
 ---
 
-## **Slide 7: Divide-and-Conquer Scheduling (Work in Progress)**
+## **Slide 4: Future Work** ⏱️ **[1 min]**
 
 **[Show reasoning trace diagram]**
 
-"We're developing divide-and-conquer scheduling for the coordinator.
+**Next milestone**: Divide-and-conquer scheduling
 
-Complex questions get broken into sub-objectives. Each objective is assigned with a reasoning mode
+**Example**: 'bird bone evolution' becomes:
 
-Example: 'bone evolution in birds' becomes:
+- Evolutionary pressure → evolutionary_reasoning
+- Bone mechanics → mechanistic_reasoning
+- Flight integration → systems_reasoning
 
-- Objective 1: Evolutionary pressure analysis → evolutionary_reasoning task
-- Objective 2: Bone structure mechanics → mechanistic_reasoning task
-- Objective 3: Flight system integration → systems_reasoning task
-
-Each task could trace to sub-tasks or reach a conclusion.
-Results merge into final answer. Tool calls are logged. Reasoning is traceable.
-
-This is our next major development milestone."
+Results merge into final answer. Reasoning is traceable and further divisible.
 
 ---
 
-## **Slide 8: Scalability Through ToolRegistry and ReasoningModeRegistry**
+## **Slide 5: Why This Matters** ⏱️ **[1 min]**
 
-"The system scales through `ToolRegistry` and `ReasoningModeRegistry`.
+**Scalability**:
 
-1. **ToolRegistry:**
-   ToolRegistry handles tools from various resources in a unified manner. It registers, presents, and runs tools. It goes beyond MCP. Includes Python tools directly and existing OpenAPI tools.
+- Layers are packaged tools, via ToolRegistry
+- Reasoning modes are recipes, via ReasoningModeRegistry
+- Both can expand rapidly
 
-   This means Layer A, B, and C can all expand rapidly. Any API becomes a tool. Any Python function becomes a tool. Any specialized model becomes a tool.
+**Team boundaries**:
 
-   People can add new tools to Layer A, B, or C respectively.
-   People can also define new reasoning modes separately.
+- AI developers: Build framework
+- Domain experts: Define reasoning modes
+- Tool developers: Build components
 
-2. **ReasoningModeRegistry:**
-   ReasoningModeRegistry manages these modes. It defines how tools are used together, which tools are used for which reasoning mode. And what prompting is used. It's like a recipe
+**Beyond biology**: Could support other science domains.
 
-This paradigm may go beyond biology. It could support reasoning modes in other science domains."
+---
+
+## **Conclusion** ⏱️ **[30 seconds]**
+
+**Thank you. Questions?**
 
 ---
 
-## **Slide 9: Development Team Boundaries**
+## **[OPTIONAL DETAILED SLIDES - Skip if running short]**
 
-"This creates clear development boundaries.
+## **Slide 6A: Technical Scalability** ⏱️ **[OPTIONAL]**
 
-AI developers build the coordinator, tool interfaces and generic planning logic. That's the framework layer.
+**ToolRegistry**: Handles tools from various resources uniformly
 
-Domain experts defines reasoning mode. They know the science. They write the prompts and designate which tools to use in each layer.
+- Goes beyond MCP
+- Includes Python tools and OpenAPI tools
+- Rapid expansion of all layers
 
-Tool developers build tool components. They can use OpenAPI, MCP, or Python. Whatever works best or most convenient.
+**ReasoningModeRegistry**: Manages reasoning modes
+
+- Defines tool usage patterns
+- Like recipes for each reasoning type
 
 ---
+
+## **Slide 6B: Development Boundaries** ⏱️ **[OPTIONAL]**
+
+**Clear separation**:
+
+- **AI developers**: Coordinator, tool interfaces, planning logic
+- **Domain experts**: Reasoning modes, prompts, tool selection
+- **Tool developers**: Components using OpenAPI, MCP, Python
+
+Each team works independently. Registry connects everything.
+
+---
+
+## **TIMING GUIDE FOR 8-MINUTE TALK:**
+
+**CORE SLIDES (6 minutes):**
+
+1. The Problem (1 min)
+2. Our Solution (2 min)
+3. Three-Layer Architecture (3 min)
+
+**WRAP-UP (2 minutes):** 4. Future Work (1 min) 5. Why This Matters (1 min)
+
+**OPTIONAL SLIDES (use only if ahead of schedule):**
+
+- Slide 2 alternative examples
+- Slide 3 Design Challenge
+- Slides 4A-4C Layer details
+- Slides 6A-6B Technical details
+
+---
+
+## **Q&A Preparation**
+
+**Q: "How do you ensure tool reliability?"**
+**A:** Each tool has defined interface contracts, input validation, output schemas, error handling.
+
+**Q: "What makes this different from existing agent frameworks?"**
+**A:** Built specifically for biological reasoning modes, and clear separation between coordination logic and domain tools.
+
+**Q: "How do you handle tool conflicts?"**
+**A:** Coordinator has conflict resolution strategies: weight outputs, ask clarification, escalate to human review.
