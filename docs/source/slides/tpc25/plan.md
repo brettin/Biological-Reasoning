@@ -20,9 +20,12 @@
 - **Layer C (External Tools):**
   - Web Search, APIs, databases for precision.
   - Example: accessing external database for support
-- **The Coordinator & Task Graph:**
+- **The Coordinator & Task Scheduling:**
   - Central "conductor" managing workflow
-  - Graph-based scheduler for optimal task sequencing
+  - Divide-and-conquer reasoning trace system
+  - Breaks complex questions into sub-objectives
+  - Each objective uses appropriate reasoning mode
+  - Results merge into final conclusion
 - **Visual:** Architecture diagram (highlight data flow between layers).
 
 ## **3. Why It Matters (2 mins)**
