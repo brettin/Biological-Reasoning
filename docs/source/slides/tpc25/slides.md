@@ -91,7 +91,7 @@ University of Chicago
 
 ---
 
-## Working in Progress
+## Work in Progress
 
 ![bg right:65% 90%](figures/triage_planner.png)
 
