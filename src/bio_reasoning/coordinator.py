@@ -80,20 +80,42 @@ class Coordinator:
         # prepend system prompt to messages.
         # if a reasoning mode is set, use reasoning mode's system prompt if available.
         # otherwise, use the default system prompt as a fallback.
+        
+        system_prompt = self.reasoning_mode.sys_prompt if self.reasoning_mode else self.system_prompt
+        logger.info("🎯 Coordinator query called")
+        logger.info(f"📝 System prompt: {system_prompt[:200]}{'...' if len(system_prompt) > 200 else ''}")
+        
         messages = [
             {
                 "role": "system",
-                "content": self.reasoning_mode.sys_prompt
-                if self.reasoning_mode
-                else self.system_prompt,
+                "content": system_prompt,
             }
         ] + list(messages)
+        
+        logger.info(f"📤 Total messages to send: {len(messages)}")
+        for i, msg in enumerate(messages):
+            logger.info(f"  Message {i+1} ({msg['role']}): {msg['content'][:100]}{'...' if len(msg['content']) > 100 else ''}")
+        
+        tools_to_use = self.reasoning_mode.layers if self.reasoning_mode else None
+        if tools_to_use:
+            logger.info(f"🔧 Available tools: {list(tools_to_use.list_tools())}")
+        else:
+            logger.info("⚠️ No tools available")
 
+        logger.info("🚀 Calling MultiModalModel.query...")
         response = self._core.query(
             messages=messages,
-            tools=self.reasoning_mode.layers if self.reasoning_mode else None,
+            tools=tools_to_use,
             stream=stream,
         )
+        logger.info("✅ MultiModalModel.query completed")
+        logger.info(f"📄 Response type: {type(response)}")
+        if isinstance(response, dict):
+            logger.info(f"📄 Response keys: {list(response.keys())}")
+            if 'content' in response:
+                logger.info(f"📄 Response content length: {len(response['content'])}")
+                logger.info(f"📄 Response content preview: {response['content'][:200]}...")
+        
         return response["content"]
 
 

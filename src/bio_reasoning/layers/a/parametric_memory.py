@@ -1,5 +1,9 @@
 from typing import Callable
+import logging
 from ...utils import query_chat_completion
+
+# Set up logging
+parametric_memory_logger = logging.getLogger(__name__)
 
 
 def parametric_memory_factory(
@@ -20,6 +24,9 @@ def parametric_memory_factory(
     Returns:
         Callable[[str], str]: A function that takes a user prompt and returns a model's response.
     """
+    parametric_memory_logger.info("🏭 Creating parametric memory factory")
+    parametric_memory_logger.info(f"🔧 Configuration: {model_name} at {api_base_url}")
+    parametric_memory_logger.info(f"📝 System prompt: {system_prompt}")
 
     def parametric_memory(user_prompt: str) -> str:
         """
@@ -31,13 +38,26 @@ def parametric_memory_factory(
         Returns:
             str: The model's distilled response to the user prompt.
         """
+        parametric_memory_logger.info("🧠 Parametric memory called")
+        parametric_memory_logger.info(f"📤 User prompt: {user_prompt}")
+        
         messages = [
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_prompt},
         ]
+        
+        parametric_memory_logger.info("📤 Sending messages to model:")
+        for i, msg in enumerate(messages):
+            parametric_memory_logger.info(f"  Message {i+1} ({msg['role']}): {msg['content'][:200]}{'...' if len(msg['content']) > 200 else ''}")
 
         # Delegate API call to the helper function
+        parametric_memory_logger.info("🌐 Making API call to parametric memory...")
         response = query_chat_completion(api_base_url, api_key, model_name, messages)
+        
+        parametric_memory_logger.info("📥 Received response from parametric memory:")
+        parametric_memory_logger.info(f"  Response length: {len(response)} characters")
+        parametric_memory_logger.info(f"  Response preview: {response[:500]}{'...' if len(response) > 500 else ''}")
+        
         return response
 
     return parametric_memory
