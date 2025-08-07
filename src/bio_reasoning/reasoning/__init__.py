@@ -4,8 +4,10 @@ Reasoning Mode defines 1) the available tools and 2) the system prompt for the L
 
 from .basics import ReasoningMode
 from .example_reasoning import ExampleReasoningMode
+from .toxicity_reasoning import ToxicityReasoningMode
 
 __all__ = [
     "ReasoningMode",
     "ExampleReasoningMode",  # this should be removed after we have a real reasoning mode, this is just a demo
+    "ToxicityReasoningMode",
 ]
