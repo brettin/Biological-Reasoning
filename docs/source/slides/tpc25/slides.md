@@ -124,6 +124,13 @@ Results merge into final answer
 
 ---
 
+## Resources
+
+- **BioR5**: https://github.com/brettin/Biological-Reasoning
+- **ToolRegistry**: https://toolregistry.readthedocs.io/
+
+---
+
 <!-- _class: lead -->
 
 # Thank You
