@@ -331,15 +331,38 @@ The confidence should be between 0 and 1."""
 registry = ReasoningModeRegistry()
 
 
+# Import instantiation functions
+from .instantiation import create_toxicology_mechanistic_mode
+from loguru import logger
+import time
+
 # Convenience functions that use the global registry
 def create_reasoning_mode(mode_name: str) -> ReasoningMode:
-    """Create a reasoning mode instance using the global registry."""
-    return registry.create_mode(mode_name)
+    """Create a reasoning mode instance using the global registry or instantiation."""
+    start_time = time.time()
+    logger.debug(f"Creating reasoning mode: {mode_name}")
+    
+    # Handle specialized instantiations first
+    if mode_name == "toxicology":
+        logger.debug(f"Using instantiation pattern for {mode_name}")
+        mode = create_toxicology_mechanistic_mode()
+        elapsed = time.time() - start_time
+        logger.debug(f"Toxicology mode instantiated in {elapsed:.3f}s: {mode.name}")
+        return mode
+    
+    # Use standard registry for base modes
+    logger.debug(f"Using registry for base mode: {mode_name}")
+    mode = registry.create_mode(mode_name)
+    elapsed = time.time() - start_time
+    logger.debug(f"Base mode created in {elapsed:.3f}s: {mode.name}")
+    return mode
 
 
 def get_available_modes() -> list[str]:
-    """Get list of available reasoning mode names."""
-    return list(registry.get_available_modes().keys())
+    """Get list of available reasoning mode names including specializations."""
+    base_modes = list(registry.get_available_modes().keys())
+    specialized_modes = ["toxicology"]  # Add specialized modes here
+    return base_modes + specialized_modes
 
 
 def triage_reasoning_mode(query: str, context: str = "") -> str:

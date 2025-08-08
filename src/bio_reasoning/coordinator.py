@@ -1,4 +1,5 @@
 import json
+import time
 from dataclasses import asdict, dataclass
 from typing import Any, Dict, List, Optional, Sequence
 
@@ -119,8 +120,14 @@ class Coordinator:
         stream: bool = False,
         user_question_override: str = None,
     ) -> str:
+        query_start = time.time()
+        logger.debug(f"Starting coordinator query with {len(messages)} messages")
+        
         # prepend system prompt to messages.
+        prompt_start = time.time()
         system_content = self.construct_system_prompt(messages, user_question_override)
+        logger.debug(f"System prompt constructed in {time.time() - prompt_start:.3f}s")
+        
         messages = [
             {
                 "role": "system",
@@ -129,11 +136,26 @@ class Coordinator:
         ] + list(messages)
         for i, message in enumerate(messages):
             logger.debug(f"Message {i}: {message}")
+        
+        # Get tools and execute query
+        tools_start = time.time()
+        tools = self._get_combined_tools()
+        tool_count = len(tools._tools) if tools and hasattr(tools, '_tools') else 0
+        logger.debug(f"Combined tools retrieved in {time.time() - tools_start:.3f}s (tools: {tool_count})")
+        
+        # Execute the actual model query
+        model_start = time.time()
+        logger.debug(f"Sending query to model: {getattr(self._core, 'model_name', 'unknown')}")
         response = self._core.query(
             messages=messages,
-            tools=self._get_combined_tools(),
+            tools=tools,
             stream=stream,
         )
+        model_elapsed = time.time() - model_start
+        logger.debug(f"Model response received in {model_elapsed:.3f}s")
+        
+        total_elapsed = time.time() - query_start
+        logger.debug(f"Coordinator query complete in {total_elapsed:.3f}s total")
         return response["content"]
 
     def _get_combined_tools(self):
