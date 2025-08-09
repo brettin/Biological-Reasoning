@@ -1,3 +1,11 @@
+"""
+An example of a specific reasoning mode that might use certain tools. Show case the process of building a reasoning mode. We essentially need to define the tools for each layers, and the system prompt.
+
+⚠️  WARNING: This is a demonstration/example mode only!
+This mode is intended for educational purposes and should NOT be used in production environments.
+Use one of the specialized reasoning modes from the 'modes' submodule instead.
+"""
+
 import os
 
 from dotenv import load_dotenv
@@ -12,6 +20,10 @@ from .basics import ReasoningMode
 class ExampleReasoningMode(ReasoningMode):
     """
     An example of a specific reasoning mode that might use certain tools. Show case the process of building a reasoning mode. We essentially need to define the tools for each layers, and the system prompt.
+
+    ⚠️  WARNING: This is a demonstration/example mode only!
+    This mode is intended for educational purposes and should NOT be used in production environments.
+    Use one of the specialized reasoning modes from the 'modes' submodule instead.
     """
 
     def __init__(self):
@@ -64,9 +76,15 @@ class ExampleReasoningMode(ReasoningMode):
         # ============ define the reasoning mode ============
         # Define keywords for this reasoning mode (example mode has general keywords)
         keywords = [
-            "example", "demo", "test", "general", "basic", "biology", "biological"
+            "example",
+            "demo",
+            "test",
+            "general",
+            "basic",
+            "biology",
+            "biological",
         ]
-        
+
         # use keyword arguments to pass the layers to the reasoning mode, instead of positional arguments, to avoid mistakes.
         super().__init__(
             layer_a=layer_a,
