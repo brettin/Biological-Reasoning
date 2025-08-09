@@ -2,7 +2,7 @@
 
 import os
 import re
-from typing import Dict, Tuple, Type
+from typing import Dict, List, Tuple, Type
 
 from dotenv import load_dotenv
 from loguru import logger
@@ -10,7 +10,6 @@ from loguru import logger
 from .basics import ReasoningMode
 from .comparative_reasoning import ComparativeReasoningMode
 from .developmental_reasoning import DevelopmentalReasoningMode
-from .example_reasoning import ExampleReasoningMode
 from .homeostatic_reasoning import HomeostaticReasoningMode
 from .mechanistic_reasoning import MechanisticReasoningMode
 from .phylogenetic_reasoning import PhylogeneticReasoningMode
@@ -50,7 +49,6 @@ class ReasoningModeRegistry:
             "homeostatic": HomeostaticReasoningMode,
             "developmental": DevelopmentalReasoningMode,
             "comparative": ComparativeReasoningMode,
-            "example": ExampleReasoningMode,
         }
 
         for name, mode_class in builtin_modes.items():
@@ -106,19 +104,34 @@ class ReasoningModeRegistry:
         instance = self.create_mode(mode_name)
         return instance.describe()
 
-    def triage(self, query: str, context: str = "") -> Tuple[str, float, str]:
+    def triage(
+        self,
+        query: str,
+        context: str = "",
+        threshold: float = None,
+        num_choices: int = 2
+    ):
         """
-        Intelligently select the most appropriate reasoning mode using hybrid approach.
+        Intelligently select reasoning mode(s) using hybrid approach.
 
         This method combines keyword-based and LLM-based triage for optimal results.
+        Can return single best mode or multiple candidates based on parameters.
 
         Args:
             query: User's question or task description
             context: Additional context information
+            threshold: Minimum confidence threshold for candidates (None for single mode)
+            num_choices: Maximum number of candidates to return (default: 2)
 
         Returns:
-            Tuple of (selected_mode, confidence_score, reasoning_explanation)
+            If threshold is None: Tuple of (selected_mode, confidence_score, reasoning_explanation)
+            If threshold is provided: List of tuples (mode_name, confidence_score, reasoning_explanation)
         """
+        # If threshold is provided, return multiple candidates
+        if threshold is not None:
+            return self.triage_multiple(query, context, threshold, num_choices)
+        
+        # Original single-mode logic
         # Get keyword-based result
         keyword_mode, keyword_confidence = self._triage_keyword(query, context)
 
@@ -144,6 +157,90 @@ class ReasoningModeRegistry:
             reasoning = f"Keyword selected {keyword_mode}, LLM suggested {llm_mode} (low confidence)"
             return keyword_mode, confidence, reasoning
 
+    def triage_multiple(
+        self,
+        query: str,
+        context: str = "",
+        threshold: float = 0.3,
+        num_choices: int = 2
+    ) -> List[Tuple[str, float, str]]:
+        """
+        Select multiple candidate reasoning modes with confidence scores.
+
+        Args:
+            query: User's question or task description
+            context: Additional context information
+            threshold: Minimum confidence threshold for candidates (0.0-1.0)
+            num_choices: Maximum number of candidates to return
+
+        Returns:
+            List of tuples (mode_name, confidence_score, reasoning_explanation)
+            sorted by confidence score in descending order.
+            Result length may be less than num_choices if fewer modes meet threshold.
+        """
+        # Get keyword-based rankings
+        keyword_rankings = self._triage_keyword_multiple(query, context)
+        
+        # Get LLM-based rankings
+        llm_rankings = self._triage_llm_multiple(query, context, num_choices)
+        
+        # Combine and score all candidates
+        combined_scores = {}
+        
+        # Process keyword rankings
+        for mode, score in keyword_rankings:
+            if mode not in combined_scores:
+                combined_scores[mode] = {'keyword': 0, 'llm': 0, 'explanations': []}
+            combined_scores[mode]['keyword'] = score
+            combined_scores[mode]['explanations'].append(f"Keyword score: {score:.2f}")
+        
+        # Process LLM rankings
+        for mode, score, explanation in llm_rankings:
+            if mode not in combined_scores:
+                combined_scores[mode] = {'keyword': 0, 'llm': 0, 'explanations': []}
+            combined_scores[mode]['llm'] = score
+            combined_scores[mode]['explanations'].append(f"LLM: {explanation}")
+        
+        # Calculate final scores and create candidates
+        candidates = []
+        for mode, scores in combined_scores.items():
+            keyword_score = scores['keyword']
+            llm_score = scores['llm']
+            
+            # Hybrid scoring: weighted average with agreement bonus
+            if keyword_score > 0 and llm_score > 0:
+                # Both methods have scores - weighted average with agreement bonus
+                final_score = (keyword_score * 0.4 + llm_score * 0.6) * 1.2
+                reasoning = f"Hybrid: keyword={keyword_score:.2f}, LLM={llm_score:.2f}"
+            elif llm_score > 0:
+                # Only LLM has score
+                final_score = llm_score * 0.8
+                reasoning = f"LLM only: {llm_score:.2f}"
+            else:
+                # Only keyword has score
+                final_score = keyword_score * 0.6
+                reasoning = f"Keyword only: {keyword_score:.2f}"
+            
+            # Ensure score doesn't exceed 1.0
+            final_score = min(1.0, final_score)
+            
+            # Add detailed explanation
+            detailed_reasoning = reasoning + "; " + "; ".join(scores['explanations'])
+            
+            candidates.append((mode, final_score, detailed_reasoning))
+        
+        # Filter by threshold and sort by confidence
+        filtered_candidates = [
+            (mode, score, reasoning)
+            for mode, score, reasoning in candidates
+            if score >= threshold
+        ]
+        
+        # Sort by confidence score (descending) and limit to num_choices
+        filtered_candidates.sort(key=lambda x: x[1], reverse=True)
+        
+        return filtered_candidates[:num_choices]
+
     def _triage_keyword(self, query: str, context: str = "") -> Tuple[str, float]:
         """
         Keyword-based triage implementation.
@@ -154,6 +251,22 @@ class ReasoningModeRegistry:
 
         Returns:
             Tuple of (selected_mode, confidence_score)
+        """
+        rankings = self._triage_keyword_multiple(query, context)
+        if rankings:
+            return rankings[0]
+        return "mechanistic", 0.1
+
+    def _triage_keyword_multiple(self, query: str, context: str = "") -> List[Tuple[str, float]]:
+        """
+        Keyword-based triage implementation returning multiple candidates.
+
+        Args:
+            query: User's question or task description
+            context: Additional context information
+
+        Returns:
+            List of tuples (mode_name, confidence_score) sorted by confidence
         """
         # Combine question and context for analysis
         text_to_analyze = f"{query} {context}".lower()
@@ -183,33 +296,32 @@ class ReasoningModeRegistry:
 
             mode_scores[mode_name] = score
 
-        # Find the mode with the highest score
-        if not mode_scores or max(mode_scores.values()) == 0:
-            # If no keywords match, default to mechanistic reasoning
-            return "mechanistic", 0.1
-
-        best_mode = max(mode_scores, key=mode_scores.get)
-        best_score = mode_scores[best_mode]
-
-        # Calculate confidence
+        # Calculate confidence scores for all modes
+        candidates = []
+        
         if total_keywords_found == 0:
-            confidence = 0.1
-        else:
-            # Base confidence on the proportion of total matches
-            base_confidence = best_score / total_keywords_found
+            # If no keywords match, return mechanistic with low confidence
+            return [("mechanistic", 0.1)]
 
-            # Boost confidence if this mode clearly dominates
-            second_best_score = (
-                sorted(mode_scores.values(), reverse=True)[1]
-                if len(mode_scores) > 1
-                else 0
-            )
-            if best_score > second_best_score * 2:
-                base_confidence = min(1.0, base_confidence * 1.5)
+        for mode_name, raw_score in mode_scores.items():
+            if raw_score > 0:
+                # Base confidence on the proportion of total matches
+                base_confidence = raw_score / total_keywords_found
+                
+                # Boost confidence if this mode has significantly more matches
+                other_scores = [s for m, s in mode_scores.items() if m != mode_name]
+                max_other_score = max(other_scores) if other_scores else 0
+                
+                if raw_score > max_other_score * 1.5:
+                    base_confidence = min(1.0, base_confidence * 1.3)
+                
+                confidence = min(1.0, base_confidence)
+                candidates.append((mode_name, confidence))
 
-            confidence = min(1.0, base_confidence)
-
-        return best_mode, confidence
+        # Sort by confidence score (descending)
+        candidates.sort(key=lambda x: x[1], reverse=True)
+        
+        return candidates if candidates else [("mechanistic", 0.1)]
 
     def _triage_llm(self, query: str, context: str = "") -> Tuple[str, float, str]:
         """
@@ -221,6 +333,26 @@ class ReasoningModeRegistry:
 
         Returns:
             Tuple of (selected_mode, confidence_score, reasoning_explanation)
+        """
+        rankings = self._triage_llm_multiple(query, context, 1)
+        if rankings:
+            return rankings[0]
+        
+        # Fallback to keyword-based triage
+        fallback_mode, fallback_confidence = self._triage_keyword(query, context)
+        return fallback_mode, 0.2, f"LLM triage failed, used keyword fallback: {fallback_mode}"
+
+    def _triage_llm_multiple(self, query: str, context: str = "", num_choices: int = 3) -> List[Tuple[str, float, str]]:
+        """
+        LLM-based triage implementation returning multiple candidates.
+
+        Args:
+            query: User's question or task description
+            context: Additional context information
+            num_choices: Number of candidate modes to return
+
+        Returns:
+            List of tuples (mode_name, confidence_score, reasoning_explanation)
         """
         try:
             # Load environment variables
@@ -245,7 +377,7 @@ class ReasoningModeRegistry:
             for mode_name, description in mode_descriptions.items():
                 modes_info.append(f"**{mode_name.upper()}**: {description}")
 
-            triage_prompt = f"""You are an expert biological reasoning mode selector. Analyze the user's question and select the most appropriate reasoning mode.
+            triage_prompt = f"""You are an expert biological reasoning mode selector. Analyze the user's question and select the top {num_choices} most appropriate reasoning modes.
 
 Available reasoning modes:
 {chr(10).join(modes_info)}
@@ -253,14 +385,23 @@ Available reasoning modes:
 User Question: "{query}"
 Additional Context: "{context}"
 
-Respond in JSON format:
+Respond in JSON format with an array of the top {num_choices} candidates:
 {{
-    "selected_mode": "mode_name",
-    "confidence": 0.95,
-    "reasoning": "Explanation of why this mode was selected."
+    "candidates": [
+        {{
+            "mode": "mode_name",
+            "confidence": 0.95,
+            "reasoning": "Explanation of why this mode was selected."
+        }},
+        {{
+            "mode": "mode_name",
+            "confidence": 0.75,
+            "reasoning": "Explanation of why this mode was selected."
+        }}
+    ]
 }}
 
-The confidence should be between 0 and 1."""
+Each confidence should be between 0 and 1. Order candidates by confidence (highest first)."""
 
             # Import here to handle missing dependencies
             import json
@@ -283,7 +424,7 @@ The confidence should be between 0 and 1."""
                     {"role": "user", "content": triage_prompt},
                 ],
                 "temperature": 0.1,
-                "max_tokens": 500,
+                "max_tokens": 800,
             }
 
             response = requests.post(
@@ -299,32 +440,45 @@ The confidence should be between 0 and 1."""
 
             # Parse the JSON response
             parsed_response = json.loads(llm_response)
-            selected_mode = parsed_response.get("selected_mode", "mechanistic").lower()
-            confidence = float(parsed_response.get("confidence", 0.5))
-            reasoning = parsed_response.get("reasoning", "LLM analysis completed")
-
-            # Validate the selected mode
-            if selected_mode not in self._modes:
-                # Fallback to keyword-based triage
-                fallback_mode, fallback_confidence = self._triage_keyword(
-                    query, context
-                )
-                return (
-                    fallback_mode,
-                    0.3,
-                    f"LLM selected invalid mode, used keyword fallback: {fallback_mode}",
-                )
-
-            return selected_mode, confidence, reasoning
+            candidates_data = parsed_response.get("candidates", [])
+            
+            candidates = []
+            for candidate in candidates_data:
+                mode = candidate.get("mode", "mechanistic").lower()
+                confidence = float(candidate.get("confidence", 0.5))
+                reasoning = candidate.get("reasoning", "LLM analysis completed")
+                
+                # Validate the selected mode
+                if mode in self._modes:
+                    candidates.append((mode, confidence, reasoning))
+            
+            # If we got valid candidates, return them
+            if candidates:
+                return candidates
+            
+            # If no valid candidates, fall back to single mode format
+            if "selected_mode" in parsed_response:
+                selected_mode = parsed_response.get("selected_mode", "mechanistic").lower()
+                confidence = float(parsed_response.get("confidence", 0.5))
+                reasoning = parsed_response.get("reasoning", "LLM analysis completed")
+                
+                if selected_mode in self._modes:
+                    return [(selected_mode, confidence, reasoning)]
 
         except Exception as e:
-            # Fallback to keyword-based triage if LLM call fails
-            fallback_mode, fallback_confidence = self._triage_keyword(query, context)
-            return (
-                fallback_mode,
-                0.2,
-                f"LLM triage failed ({str(e)}), used keyword fallback: {fallback_mode}",
-            )
+            logger.warning(f"LLM triage failed: {str(e)}")
+
+        # Fallback to keyword-based triage
+        keyword_rankings = self._triage_keyword_multiple(query, context)
+        fallback_candidates = []
+        for mode, confidence in keyword_rankings[:num_choices]:
+            fallback_candidates.append((
+                mode,
+                confidence * 0.5,  # Reduce confidence for fallback
+                f"LLM triage failed, used keyword fallback"
+            ))
+        
+        return fallback_candidates if fallback_candidates else [("mechanistic", 0.1, "Complete fallback")]
 
 
 # Create a global registry instance
@@ -342,16 +496,60 @@ def get_available_modes() -> list[str]:
     return list(registry.get_available_modes().keys())
 
 
-def triage_reasoning_mode(query: str, context: str = "") -> str:
-    """Triage to select the best reasoning mode."""
-    mode, _, _ = registry.triage(query, context)
-    return mode
+def triage_reasoning_mode(
+    query: str,
+    context: str = "",
+    threshold: float = None,
+    num_choices: int = 2
+):
+    """
+    Triage to select reasoning mode(s).
+    
+    Args:
+        query: User's question or task description
+        context: Additional context information
+        threshold: If provided, returns multiple candidates above this threshold
+        num_choices: Maximum number of candidates when threshold is used
+    
+    Returns:
+        If threshold is None: str (single mode name)
+        If threshold is provided: List[Tuple[str, float, str]] (multiple candidates)
+    """
+    result = registry.triage(query, context, threshold, num_choices)
+    if threshold is None:
+        # Return just the mode name for backward compatibility
+        return result[0]
+    else:
+        # Return the full list of candidates
+        return result
 
 
-def triage_with_confidence(query: str, context: str = "") -> Tuple[str, float]:
-    """Triage with confidence score."""
-    mode, confidence, _ = registry.triage(query, context)
-    return mode, confidence
+def triage_with_confidence(
+    query: str,
+    context: str = "",
+    threshold: float = None,
+    num_choices: int = 2
+):
+    """
+    Triage with confidence score(s).
+    
+    Args:
+        query: User's question or task description
+        context: Additional context information
+        threshold: If provided, returns multiple candidates above this threshold
+        num_choices: Maximum number of candidates when threshold is used
+    
+    Returns:
+        If threshold is None: Tuple[str, float] (mode, confidence)
+        If threshold is provided: List[Tuple[str, float, str]] (multiple candidates)
+    """
+    result = registry.triage(query, context, threshold, num_choices)
+    if threshold is None:
+        # Return mode and confidence for backward compatibility
+        return result[0], result[1]
+    else:
+        # Return the full list of candidates
+        return result
 
 
 def get_mode_info(mode_name: str) -> Dict[str, any]:
@@ -364,7 +562,7 @@ if __name__ == "__main__":
     print("🧬 Simplified Bio-Reasoning Registry Demo")
     print("=" * 50)
 
-    # Test triage
+    # Test single triage
     query = "How did natural selection shape bird flight evolution?"
     mode, confidence, reasoning = registry.triage(query)
     print(f"Query: {query}")
@@ -373,10 +571,18 @@ if __name__ == "__main__":
     print(f"Reasoning: {reasoning}")
     print()
 
+    # Test multiple triage
+    print("Multiple Candidate Triage:")
+    candidates = triage_reasoning_mode(query, threshold=0.2, num_choices=3)
+    for i, (mode, conf, reason) in enumerate(candidates, 1):
+        print(f"  {i}. {mode} (confidence: {conf:.2f}) - {reason}")
+    print()
+
     # Test mode creation
     reasoning_mode = create_reasoning_mode(mode)
     print(f"Created mode: {reasoning_mode.name}")
 
     # Test available modes
     print(f"Available modes: {len(get_available_modes())}")
+    print(f"Modes: {', '.join(get_available_modes())}")
     print("Registry successfully initialized!")
