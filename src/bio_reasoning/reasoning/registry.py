@@ -8,17 +8,19 @@ from dotenv import load_dotenv
 from loguru import logger
 
 from .basics import ReasoningMode
-from .comparative_reasoning import ComparativeReasoningMode
-from .developmental_reasoning import DevelopmentalReasoningMode
-from .homeostatic_reasoning import HomeostaticReasoningMode
-from .mechanistic_reasoning import MechanisticReasoningMode
-from .phylogenetic_reasoning import PhylogeneticReasoningMode
-from .probabilistic_reasoning import ProbabilisticReasoningMode
-from .spatial_reasoning import SpatialReasoningMode
-from .systems_reasoning import SystemsReasoningMode
-from .teleonomic_reasoning import TeleonomicReasoningMode
-from .temporal_reasoning import TemporalReasoningMode
-from .tradeoff_reasoning import TradeoffReasoningMode
+from .modes import (
+    ComparativeReasoningMode,
+    DevelopmentalReasoningMode,
+    HomeostaticReasoningMode,
+    MechanisticReasoningMode,
+    PhylogeneticReasoningMode,
+    ProbabilisticReasoningMode,
+    SpatialReasoningMode,
+    SystemsReasoningMode,
+    TeleonomicReasoningMode,
+    TemporalReasoningMode,
+    TradeoffReasoningMode,
+)
 
 
 class ReasoningModeRegistry:

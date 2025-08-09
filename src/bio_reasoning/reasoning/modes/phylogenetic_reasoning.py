@@ -3,8 +3,8 @@ import os
 from dotenv import load_dotenv
 from toolregistry import ToolRegistry
 
-from ..layers.a.parametric_memory import parametric_memory_factory
-from .basics import ReasoningMode
+from ...layers.a.parametric_memory import parametric_memory_factory
+from ..basics import ReasoningMode
 
 
 class PhylogeneticReasoningMode(ReasoningMode):
