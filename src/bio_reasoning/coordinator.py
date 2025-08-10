@@ -1,45 +1,16 @@
 import json
-from dataclasses import asdict, dataclass
 from typing import Any, Dict, List, Optional, Sequence
 
-from cicada.core import MultiModalModel, PromptBuilder
+from cicada.core import PromptBuilder
 from loguru import logger
 from openai.types.chat.chat_completion_message import ChatCompletionMessage
 
+from .agent import GeneralAgent, AgentConfig
 from .reasoning.example_reasoning import ExampleReasoningMode, ReasoningMode
 from .reasoning.registry import create_reasoning_mode, get_available_modes, registry
 
-
-@dataclass
-class Configuration:
-    api_key: str
-    api_base_url: str
-    model_name: str
-    stream: bool = True
-
-    def to_dict(self) -> Dict[str, Any]:
-        dict_repr = asdict(self)
-        return dict_repr
-
-    def __str__(self) -> str:
-        """
-        This is a hack to make the Configuration object printable.
-        """
-        return str(self.to_dict())
-
-    def __repr__(self) -> str:
-        """
-        This is a hack to make the Configuration object printable.
-        """
-        return self.__str__()
-
-    # what's the method to override for **config unpacking?
-    def __getitem__(self, key: str) -> Any:
-        """
-        This is a hack to make the Configuration object unpackable.
-        For example, we can use **config to unpack the Configuration object.
-        """
-        return getattr(self, key)
+# For backward compatibility
+Configuration = AgentConfig
 
 
 class Coordinator:
@@ -50,11 +21,11 @@ class Coordinator:
     def __init__(
         self,
         *,
-        config: Configuration,
+        config: AgentConfig,
         system_prompt: str = "You are a helpful assistant.",
     ) -> None:
         logger.debug(config)
-        self._core = MultiModalModel(**config.to_dict())
+        self._agent = GeneralAgent(config=config, system_prompt=system_prompt)
         self._reasoning_mode: Optional[ReasoningMode] = None
         self._reasoning_modes: List[ReasoningMode] = []
         self.system_prompt = system_prompt
@@ -119,22 +90,16 @@ class Coordinator:
         stream: bool = False,
         user_question_override: str = None,
     ) -> str:
-        # prepend system prompt to messages.
+        # Construct system prompt with reasoning modes
         system_content = self.construct_system_prompt(messages, user_question_override)
-        messages = [
-            {
-                "role": "system",
-                "content": system_content,
-            }
-        ] + list(messages)
-        for i, message in enumerate(messages):
-            logger.debug(f"Message {i}: {message}")
-        response = self._core.query(
+        
+        # Use the agent to query (tools are handled by MultiModalModel)
+        return self._agent.query(
             messages=messages,
-            tools=self._get_combined_tools(),
             stream=stream,
+            system_prompt_override=system_content,
+            tools=self._get_combined_tools(),  # Pass tools as kwargs to MultiModalModel
         )
-        return response["content"]
 
     def _get_combined_tools(self):
         """Get combined tools from all reasoning modes."""
@@ -167,7 +132,7 @@ if __name__ == "__main__":
 
     load_dotenv()  # Load environment variables from .env file
 
-    config = Configuration(
+    config = AgentConfig(
         api_key=os.getenv("API_KEY", "sk-xxxxxxxxx"),
         api_base_url=os.getenv("BASE_URL", "https://api.openai.com/v1"),
         model_name=os.getenv("MODEL_NAME", "gpt-4.1"),
