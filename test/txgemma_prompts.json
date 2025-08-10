@@ -1,0 +1,60 @@
+{
+    "instruction": "Classify the following molecule as mutagenic or not.",
+    "context": "Mutagenicity is the ability of a compound to cause genetic mutations, and is a critical consideration for early toxicity screening.",
+    "question": "Is the following molecule mutagenic? SMILES: Cc1nnsc1SCC(=O)O",
+    "answer": "(B) Is mutagenic"
+}
+{
+    "instruction": "Predict whether the molecule blocks the hERG potassium channel.", 
+    "context": "Blockade of the hERG channel can lead to fatal cardiac arrhythmia, and is a common cause of drug withdrawal.",
+    "question": "Does the following molecule block the hERG channel? SMILES: CCn1c(N)nc2ccccc21",
+    "answer": "Yes"
+}
+{
+    "instruction": "Assess the molecule's ability to cross the blood-brain barrier.",
+    "context": "Only molecules with suitable physicochemical properties can penetrate the blood-brain barrier, essential for CNS drug development.",
+    "question": "Can this molecule cross the blood-brain barrier? SMILES: O=C(O)CC(O)C(=O)O",
+    "answer": "No"
+}
+{
+    "instruction": "Predict the synergy score for a drug combination.",
+    "context": "Synergy quantifies the combined effect of two drugs tested against a cancer cell line, ranging from 0 (antagonistic) to 1000 (strong synergy).",
+    "question": "Drug1: CS(=O)(=O)CCCCO, Drug2: N.N.Cl[Pt+2]Cl, Cell line: OVCAR3, ovarian cell adenocarcinoma",
+    "answer": "678"
+}
+{
+    "instruction": "Predict the binding affinity between the molecule and protein target.",
+    "context": "Binding affinity is measured in nM or μM and reflects how strongly a molecule binds its protein target.",
+    "question": "Predict the binding affinity between Drug SMILES: CN1CCN(CC1)C2=CC=CC=C2 and Protein: MAKVISFVLLLVCFLQ",
+    "answer": "56.2 nM"
+}
+{
+    "instruction": "Estimate the Caco-2 cell permeability of the compound.",
+    "context": "The Caco-2 assay simulates intestinal absorption. Values are in cm/s.",
+    "question": "What is the Caco-2 permeability of SMILES: CCC(=O)Oc1ccccc1C(=O)O?",
+    "answer": "1.25 × 10⁻⁶ cm/s"
+}
+{
+    "instruction": "Predict the reactant(s) for the given product.",
+    "context": "Predicting reactants from a product is important for retrosynthetic planning in medicinal chemistry.",
+    "question": "Product: NC1C2ccccc2C(=O)N1Cc1ccccc1",
+    "answer": "CCOC(=O)CBr"
+}
+{
+    "instruction": "Predict the success of a Phase II clinical trial.",
+    "context": "Phase II trials test drug efficacy in patients. Success prediction combines drug structure and disease context.",
+    "question": "Drug: CC(=O)OC1=CC=CC=C1C(=O)O, Disease: Type 2 Diabetes Mellitus",
+    "answer": "Yes"
+}
+{
+    "instruction": "Score the association between a protein and a disease.",
+    "context": "Associations are scored between 0 (no evidence) to 1 (strong evidence).",
+    "question": "Protein sequence: MTEYKLVVVGAGGVGKSALTIQLIQNHFVDEYDPTIEDSYRKQVE, Disease: Parkinson's disease",
+    "answer": "0.82"
+}
+{
+    "instruction": "Predict the outcome of the molecule in a ToxCast assay for estrogen receptor binding.",
+    "context": "The ToxCast ER assay tests whether a chemical interacts with the estrogen receptor in vitro. Positive interaction indicates potential endocrine disruption.",
+    "question": "Will the following compound test positive in the estrogen receptor binding assay? SMILES: CC1=CC(=O)C=CC1=O",
+    "answer": "Yes"
+}
