@@ -2,7 +2,7 @@
 
 import os
 import re
-from typing import Dict, List, Tuple, Type
+from typing import Dict, List, Optional, Tuple, Type
 
 from dotenv import load_dotenv
 from loguru import logger
@@ -60,12 +60,13 @@ class ReasoningModeRegistry:
         """Get all available reasoning modes."""
         return self._modes.copy()
 
-    def create_mode(self, mode_name: str) -> ReasoningMode:
+    def create_mode(self, mode_name: str, user_query: Optional[str] = None) -> ReasoningMode:
         """
         Create an instance of a reasoning mode.
 
         Args:
             mode_name: Name of the reasoning mode
+            user_query: Optional user query for instantiation pattern customization
 
         Returns:
             A ReasoningMode instance
@@ -73,20 +74,28 @@ class ReasoningModeRegistry:
         Raises:
             ValueError: If the mode is not registered
         """
+        # Handle instantiation patterns (specializations of base modes)
+        if mode_name == "toxicology":
+            return self._create_toxicology_mode(user_query)
+        
         if mode_name not in self._modes:
-            available_modes = list(self._modes.keys())
+            available_modes = list(self._modes.keys()) + ["toxicology"]  # Include instantiation patterns
             raise ValueError(
                 f"Unknown reasoning mode: {mode_name}. Available modes: {available_modes}"
             )
 
-        # Use cached instance if available
-        if mode_name in self._mode_cache:
+        # Use cached instance if available (only for base modes, not instantiations)
+        if mode_name in self._mode_cache and user_query is None:
             return self._mode_cache[mode_name]
 
         # Create and cache new instance
         mode_class = self._modes[mode_name]
         instance = mode_class()
-        self._mode_cache[mode_name] = instance
+        
+        # Only cache base modes (instantiations are customized and shouldn't be cached)
+        if user_query is None:
+            self._mode_cache[mode_name] = instance
+            
         return instance
 
     def get_mode_info(self, mode_name: str) -> Dict[str, any]:
@@ -242,6 +251,32 @@ class ReasoningModeRegistry:
         filtered_candidates.sort(key=lambda x: x[1], reverse=True)
         
         return filtered_candidates[:num_choices]
+
+    def _create_toxicology_mode(self, user_query: Optional[str] = None) -> ReasoningMode:
+        """
+        Create a toxicology-specialized reasoning mode using instantiation pattern.
+        
+        This demonstrates the BioR5 instantiation principle:
+        - Start with MechanisticReasoningMode (base mode)
+        - Augment with toxicology-specific tools
+        - Customize system prompt based on user query
+        
+        Args:
+            user_query: User's toxicology question to customize the system prompt
+            
+        Returns:
+            MechanisticReasoningMode instance specialized for toxicology
+        """
+        try:
+            from .toxicology_instantiation import create_toxicology_mode
+            return create_toxicology_mode(user_query)
+        except ImportError as e:
+            logger.warning(f"Could not import toxicology instantiation: {e}")
+            # Fallback to base mechanistic mode
+            base_mode = self.create_mode("mechanistic")
+            base_mode.name = "Mechanistic Toxicology Expert (Basic)"
+            base_mode.name_canonical = "toxicology"
+            return base_mode
 
     def _triage_keyword(self, query: str, context: str = "") -> Tuple[str, float]:
         """
@@ -488,9 +523,9 @@ registry = ReasoningModeRegistry()
 
 
 # Convenience functions that use the global registry
-def create_reasoning_mode(mode_name: str) -> ReasoningMode:
+def create_reasoning_mode(mode_name: str, user_query: Optional[str] = None) -> ReasoningMode:
     """Create a reasoning mode instance using the global registry."""
-    return registry.create_mode(mode_name)
+    return registry.create_mode(mode_name, user_query)
 
 
 def get_available_modes() -> list[str]:

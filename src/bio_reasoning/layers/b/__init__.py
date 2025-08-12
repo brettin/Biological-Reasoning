@@ -3,10 +3,12 @@ Layer B consists of bespoke foundation models specialized for non-textual or mul
 """
 
 from .visual_describer import visual_describer_factory
+from .txgemma_predictor import txgemma_predictor_factory
 from .utils import load_image_data
 
 __all__ = [
     "visual_describer_factory",
+    "txgemma_predictor_factory",
     # utils
     "load_image_data",
 ]
