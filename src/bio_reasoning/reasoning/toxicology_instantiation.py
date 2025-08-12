@@ -48,12 +48,29 @@ def create_toxicology_mode(user_query: Optional[str] = None) -> MechanisticReaso
     except Exception as e:
         print(f"Warning: Could not add TX-Gemma predictor: {e}")
     
-    # Step 4: Augment Layer C with toxicology databases (when available)
-    # TODO: Add toxicology-specific external tools
-    # - PubChem toxicity data
-    # - ToxCast endpoints
-    # - ChEMBL mechanism data
-    # - PubMed toxicology literature search
+    # Step 4: Augment Layer C with toxicology databases
+    try:
+        from ..layers.c.pubchem_toxicity import pubchem_toxicity_factory
+        from ..layers.c.toxcast_endpoints import toxcast_endpoints_factory
+        from ..layers.c.chembl_mechanisms import chembl_mechanisms_factory
+        
+        # PubChem toxicity data
+        pubchem_search = pubchem_toxicity_factory()
+        base_mode.layer_c.register(pubchem_search, name="pubchem_toxicity")
+        
+        # ToxCast endpoints
+        toxcast_search = toxcast_endpoints_factory()
+        base_mode.layer_c.register(toxcast_search, name="toxcast_endpoints")
+        
+        # ChEMBL mechanism data
+        chembl_search = chembl_mechanisms_factory()
+        base_mode.layer_c.register(chembl_search, name="chembl_mechanisms")
+        
+        print("✅ Layer C tools loaded: PubChem, ToxCast, ChEMBL")
+        
+    except Exception as e:
+        print(f"Warning: Could not load some Layer C tools: {e}")
+        # TODO: Add PubMed toxicology literature search when available
     
     # Step 5: Append toxicology-specific instructions to system prompt
     toxicology_instructions = _generate_toxicology_instructions(user_query)
@@ -96,7 +113,9 @@ You are now operating in TOXICOLOGY mode. Your mechanistic reasoning is speciali
 **Available Toxicology Tools:**
 - txgemma_predictor: Specialized AI model for toxicity endpoint prediction
 - parametric_memory: Your knowledge of toxicology mechanisms and pathways
-- [Future tools: PubChem, ToxCast, ChEMBL, PubMed toxicology search]
+- pubchem_toxicity: PubChem database for molecular properties and experimental data
+- toxcast_endpoints: EPA ToxCast high-throughput toxicity screening data
+- chembl_mechanisms: ChEMBL database for mechanism of action and bioactivity data
 
 **Analysis Priority:**
 1. Experimental data > AI predictions > computational estimates
