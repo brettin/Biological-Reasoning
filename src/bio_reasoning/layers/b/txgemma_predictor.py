@@ -226,7 +226,7 @@ if __name__ == "__main__":
     # Example usage
     predictor = txgemma_predictor_factory(
         api_key=os.getenv("TXGEMMA_API_KEY", "EMPTY"),
-        api_base_url=os.getenv("TXGEMMA_BASE_URL", "http://localhost:8000/v1"),
+        api_base_url=os.getenv("TXGEMMA_BASE_URL", "http://REPLACE_WITH_YOUR_BASE_URL/v1"),
         model_name=os.getenv("TXGEMMA_MODEL_NAME", "google/txgemma-27b-chat")
     )
     

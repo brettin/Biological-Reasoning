@@ -50,9 +50,9 @@ def comprehensive_toxicity_analysis(smiles: str, molecule_name: str = None):
     
     # Configure for your setup
     config = Configuration(
-        api_key=os.getenv("API_KEY", "brettin"),
-        api_base_url=os.getenv("BASE_URL", "http://localhost:44497/v1"),
-        model_name=os.getenv("MODEL_NAME", "gpto3"),
+        api_key=os.getenv("API_KEY", "REPLACE WITH YOUR API KEY"),
+        api_base_url=os.getenv("BASE_URL", "REPLACE WITH YOUR BASE URL"),
+        model_name=os.getenv("MODEL_NAME", "REPLACE WITH YOUR MODEL NAME"),
         stream=False  # Use non-streaming for cleaner output
     )
     
