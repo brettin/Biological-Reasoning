@@ -1,11 +1,12 @@
 """Simplified ReasoningModeRegistry for biological reasoning modes."""
 
-import os
 import re
 from typing import Dict, List, Optional, Tuple, Type
 
-from dotenv import load_dotenv
 from loguru import logger
+
+from ..config import ConfigManager
+from ..utils import query_chat_completion
 
 from .basics import ReasoningMode
 from .modes import (
@@ -392,11 +393,20 @@ class ReasoningModeRegistry:
             List of tuples (mode_name, confidence_score, reasoning_explanation)
         """
         try:
-            # Load environment variables
-            load_dotenv()
-            api_key = os.getenv("API_KEY", "sk-xxxxxx")
-            api_base_url = os.getenv("BASE_URL", "https://api.openai.com/v1")
-            model_name = os.getenv("MODEL_NAME", "gpt-4")
+            # Get LLM configuration from centralized config
+            config = ConfigManager.get_config()
+            
+            # Use registry LLM if available, otherwise fallback to primary
+            if config.has_endpoint("registry"):
+                llm_config = config.get_endpoint("registry").to_agent_config()
+                logger.info("Using registry LLM for reasoning mode triage")
+            else:
+                llm_config = config.get_endpoint("primary").to_agent_config() 
+                logger.info("Using primary LLM for reasoning mode triage (registry not configured)")
+            
+            api_key = llm_config.api_key
+            api_base_url = llm_config.api_base_url
+            model_name = llm_config.model_name
 
             # Get mode descriptions
             mode_descriptions = {}
@@ -443,37 +453,25 @@ Each confidence should be between 0 and 1. Order candidates by confidence (highe
             # Import here to handle missing dependencies
             import json
 
-            import requests
+            # Prepare messages for LLM call
+            messages = [
+                {
+                    "role": "system",
+                    "content": "You are an expert biological reasoning mode selector. Always respond with valid JSON.",
+                },
+                {"role": "user", "content": triage_prompt},
+            ]
 
-            # Make API call to LLM
-            headers = {
-                "Authorization": f"Bearer {api_key}",
-                "Content-Type": "application/json",
-            }
-
-            data = {
-                "model": model_name,
-                "messages": [
-                    {
-                        "role": "system",
-                        "content": "You are an expert biological reasoning mode selector. Always respond with valid JSON.",
-                    },
-                    {"role": "user", "content": triage_prompt},
-                ],
-                "temperature": 0.1,
-                "max_tokens": 800,
-            }
-
-            response = requests.post(
-                f"{api_base_url}/chat/completions",
-                headers=headers,
-                json=data,
-                timeout=30,
+            # Make API call using centralized utility
+            llm_response = query_chat_completion(
+                base_url=api_base_url,
+                api_key=api_key,
+                model_name=model_name,
+                messages=messages,
+                temperature=0.1,
+                max_tokens=800,
+                timeout=30
             )
-            response.raise_for_status()
-
-            result = response.json()
-            llm_response = result["choices"][0]["message"]["content"]
 
             # Parse the JSON response
             parsed_response = json.loads(llm_response)
@@ -503,7 +501,10 @@ Each confidence should be between 0 and 1. Order candidates by confidence (highe
                     return [(selected_mode, confidence, reasoning)]
 
         except Exception as e:
-            logger.warning(f"LLM triage failed: {str(e)}")
+            if "Configuration" in str(e):
+                logger.warning(f"LLM triage failed due to configuration issue: {str(e)}")
+            else:
+                logger.warning(f"LLM triage failed: {str(e)}")
 
         # Fallback to keyword-based triage
         keyword_rankings = self._triage_keyword_multiple(query, context)
