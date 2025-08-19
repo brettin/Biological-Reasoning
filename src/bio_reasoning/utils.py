@@ -9,6 +9,7 @@ def query_chat_completion(
     model_name: str,
     messages: List[Dict[str, Any]],
     timeout: int = 600,
+    **kwargs
 ) -> str:
     """
     Sends a chat completion request to an external API.
@@ -19,6 +20,7 @@ def query_chat_completion(
         model_name (str): Name of the model to use for chat completions.
         messages (List[Dict[str, str | List[Dict[str, str]]]]): List of message objects describing the conversation.
         timeout (int, optional): Timeout for the request in seconds. Defaults to 600.
+        **kwargs: Additional parameters for the API request (temperature, max_tokens, etc.)
 
     Returns:
         str: The content of the API's response.
@@ -32,6 +34,9 @@ def query_chat_completion(
         "Authorization": f"Bearer {api_key}",
     }
     payload = {"model": model_name, "messages": messages}
+    
+    # Add any additional parameters
+    payload.update(kwargs)
 
     try:
         response = httpx.post(api_url, json=payload, headers=headers, timeout=timeout)
