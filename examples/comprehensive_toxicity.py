@@ -28,8 +28,9 @@ from typing import Dict, List
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
 
 from cicada.core import PromptBuilder
-from bio_reasoning.coordinator import Coordinator, Configuration
+from bio_reasoning.coordinator import Coordinator
 from bio_reasoning.reasoning.registry import create_reasoning_mode
+from bio_reasoning.config import ConfigManager
 from loguru import logger
 
 
@@ -48,16 +49,20 @@ def comprehensive_toxicity_analysis(smiles: str, molecule_name: str = None):
     if molecule_name:
         logger.info(f"Molecule: {molecule_name}")
     
-    # Configure for your setup
-    config = Configuration(
-        api_key=os.getenv("API_KEY", "REPLACE WITH YOUR API KEY"),
-        api_base_url=os.getenv("BASE_URL", "REPLACE WITH YOUR BASE URL"),
-        model_name=os.getenv("MODEL_NAME", "REPLACE WITH YOUR MODEL NAME"),
-        stream=False  # Use non-streaming for cleaner output
-    )
-    
-    # Create coordinator
-    coordinator = Coordinator(config=config)
+    # Get centralized configuration
+    try:
+        config = ConfigManager.get_config()
+        primary_config = config.get_endpoint("primary").to_agent_config()
+        
+        # Create coordinator with centralized config
+        coordinator = Coordinator(config=primary_config)
+        logger.info(f"Using centralized configuration with {config.list_endpoints()} endpoints")
+        
+    except Exception as e:
+        logger.error(f"Failed to load centralized configuration: {e}")
+        print("❌ Please configure the system using .env file or environment variables")
+        print("📖 See docs/env.example for configuration template")
+        return
     
     # Use instantiation pattern: toxicology → MechanisticReasoningMode + toxicology tools/prompts
     user_query = f"Analyze the comprehensive toxicity of {molecule_name or 'the molecule'} with SMILES: {smiles}"
