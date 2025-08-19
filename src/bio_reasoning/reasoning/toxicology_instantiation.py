@@ -11,14 +11,14 @@ Usage:
     toxicology_mode = create_toxicology_mode(user_query="Analyze benzene toxicity")
 """
 
-import os
 from typing import Optional
 
-from dotenv import load_dotenv
+from loguru import logger
 from toolregistry import ToolRegistry
 
 from .modes.mechanistic_reasoning import MechanisticReasoningMode
-from ..layers.b.txgemma_predictor import txgemma_predictor_factory
+from ..layers.b.txgemma_predictor import get_txgemma_predictor
+from ..config import ConfigManager
 
 
 def create_toxicology_mode(user_query: Optional[str] = None) -> MechanisticReasoningMode:
@@ -34,21 +34,26 @@ def create_toxicology_mode(user_query: Optional[str] = None) -> MechanisticReaso
     # Step 1: Instantiate base reasoning mode
     base_mode = MechanisticReasoningMode()
     
-    # Step 2: Load environment for toxicology-specific tools
-    load_dotenv()
-    
-    # Step 3: Augment Layer B with TX-Gemma predictor
+    # Step 2: Augment Layer B with TX-Gemma predictor using centralized config
     try:
-        txgemma_predictor = txgemma_predictor_factory(
-            api_key=os.getenv("TXGEMMA_API_KEY", os.getenv("API_KEY", "sk-xxxxxx")),
-            api_base_url=os.getenv("TXGEMMA_BASE_URL", "http://REPLACE_WITH_YOUR_BASE_URL/v1"),
-            model_name=os.getenv("TXGEMMA_MODEL_NAME", "google/txgemma-27b-chat"),
-        )
-        base_mode.layer_b.register(txgemma_predictor)
+        config = ConfigManager.get_config()
+        
+        # Try to get TX-Gemma predictor (handles fallback automatically)
+        txgemma_predictor = get_txgemma_predictor()
+        
+        if txgemma_predictor:
+            base_mode.layer_b.register(txgemma_predictor)
+            if config.has_endpoint("txgemma"):
+                logger.info("✅ TX-Gemma predictor added to toxicology mode")
+            else:
+                logger.info("✅ Primary LLM predictor added to toxicology mode (TX-Gemma fallback)")
+        else:
+            logger.warning("⚠️ No predictor available for toxicology mode")
+            
     except Exception as e:
-        print(f"Warning: Could not add TX-Gemma predictor: {e}")
+        logger.warning(f"Could not add predictor to toxicology mode: {e}")
     
-    # Step 4: Augment Layer C with toxicology databases
+    # Step 3: Augment Layer C with toxicology databases
     try:
         from ..layers.c.pubchem_toxicity import pubchem_toxicity_factory
         from ..layers.c.toxcast_endpoints import toxcast_endpoints_factory
@@ -72,11 +77,11 @@ def create_toxicology_mode(user_query: Optional[str] = None) -> MechanisticReaso
         print(f"Warning: Could not load some Layer C tools: {e}")
         # TODO: Add PubMed toxicology literature search when available
     
-    # Step 5: Append toxicology-specific instructions to system prompt
+    # Step 4: Append toxicology-specific instructions to system prompt
     toxicology_instructions = _generate_toxicology_instructions(user_query)
     base_mode.sys_prompt += "\n\n" + toxicology_instructions
     
-    # Step 6: Update mode metadata for toxicology
+    # Step 5: Update mode metadata for toxicology
     base_mode.name = "Mechanistic Toxicology Expert"
     base_mode.description = "Mechanistic reasoning specialized for molecular toxicity analysis"
     base_mode.keywords.extend([

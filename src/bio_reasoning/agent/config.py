@@ -1,7 +1,9 @@
 """Configuration classes for the bio-reasoning agent module."""
 
-from dataclasses import asdict, dataclass
-from typing import Any, Dict
+import os
+from dataclasses import asdict, dataclass, replace
+from typing import Any, Dict, Optional
+from dotenv import load_dotenv
 
 
 @dataclass
@@ -85,3 +87,39 @@ class AgentConfig:
             raise ValueError("max_tokens must be positive")
         if self.timeout <= 0:
             raise ValueError("timeout must be positive")
+    
+    def with_overrides(self, **kwargs) -> 'AgentConfig':
+        """Create a new AgentConfig with specified overrides.
+        
+        Args:
+            **kwargs: Configuration parameters to override
+            
+        Returns:
+            New AgentConfig instance with overridden values
+        """
+        return replace(self, **kwargs)
+
+
+@dataclass 
+class LLMEndpoint:
+    """Configuration for a single LLM endpoint."""
+    name: str
+    api_key: str
+    api_base_url: str
+    model_name: str
+    temperature: float = 0.7
+    max_tokens: int = 4096
+    timeout: int = 30
+    stream: bool = True
+    
+    def to_agent_config(self) -> AgentConfig:
+        """Convert to AgentConfig format for backward compatibility."""
+        return AgentConfig(
+            api_key=self.api_key,
+            api_base_url=self.api_base_url,
+            model_name=self.model_name,
+            temperature=self.temperature,
+            max_tokens=self.max_tokens,
+            timeout=self.timeout,
+            stream=self.stream
+        )

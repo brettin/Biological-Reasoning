@@ -8,6 +8,7 @@ from openai.types.chat.chat_completion_message import ChatCompletionMessage
 from .agent import GeneralAgent, AgentConfig
 from .reasoning.example_reasoning import ExampleReasoningMode, ReasoningMode
 from .reasoning.registry import create_reasoning_mode, get_available_modes, registry
+from .config import ConfigManager
 
 # For backward compatibility
 Configuration = AgentConfig
@@ -125,20 +126,25 @@ class Coordinator:
 
 
 if __name__ == "__main__":
-    import os
     import sys
 
-    from dotenv import load_dotenv
+    # Get configuration from central config manager
+    try:
+        central_config = ConfigManager.get_config()
+        agent_config = central_config.get_agent_config("primary")
+        logger.info(f"Using primary LLM: {agent_config.model_name}")
+        
+        # Log available endpoints
+        endpoints = central_config.list_endpoints()
+        logger.info(f"Available endpoints: {endpoints}")
+            
+    except Exception as e:
+        logger.error(f"Configuration error: {e}")
+        logger.error("Please check your .env file or environment variables")
+        sys.exit(1)
 
-    load_dotenv()  # Load environment variables from .env file
-
-    config = AgentConfig(
-        api_key=os.getenv("API_KEY", "sk-xxxxxxxxx"),
-        api_base_url=os.getenv("BASE_URL", "https://api.openai.com/v1"),
-        model_name=os.getenv("MODEL_NAME", "gpt-4.1"),
-    )
     coordinator = Coordinator(
-        config=config,
+        config=agent_config,
         system_prompt=(
             "You are a coordinator of a team of experts and tools. "
             " You are provided with a collections of tools. Tools are labeled with a prefix from layer_a, layer_b, or layer_c. "
