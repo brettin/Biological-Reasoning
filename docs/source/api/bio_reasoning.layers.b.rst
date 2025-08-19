@@ -14,3 +14,4 @@ Submodules
 
    bio_reasoning.layers.b.utils
    bio_reasoning.layers.b.visual_describer
+   bio_reasoning.layers.b.txgemma_predictor

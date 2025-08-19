@@ -5,4 +5,5 @@
 
 installation
 basics
+txgemma_guide
 ```

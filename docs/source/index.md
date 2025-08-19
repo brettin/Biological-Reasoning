@@ -23,6 +23,7 @@ pip install bio-reasoning
 usage/index
 examples/index
 api/index
+design/tdc_parameter_combinations
 ```
 
 ## Citation

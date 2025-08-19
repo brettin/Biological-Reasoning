@@ -5,4 +5,5 @@ Welcome to the API references for the project. Below is a list of available modu
 ```{toctree}
 
 bio_reasoning
+bio_reasoning.layers.b.txgemma_predictor
 ```
