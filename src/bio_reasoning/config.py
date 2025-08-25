@@ -265,3 +265,4 @@ def get_agent_config(endpoint: str = "primary") -> AgentConfig:
     """Get AgentConfig for a specific endpoint."""
     return ConfigManager.get_config().get_agent_config(endpoint)
 
+
