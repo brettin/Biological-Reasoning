@@ -14,7 +14,8 @@ import requests
 
 def toxcast_endpoints_factory(
     timeout: int = 30,
-    max_retries: int = 3
+    max_retries: int = 3,
+    delay_between_requests: float = 0.2
 ) -> callable:
     """
     Factory function to create a ToxCast endpoints retrieval function.
@@ -22,6 +23,7 @@ def toxcast_endpoints_factory(
     Args:
         timeout: Request timeout in seconds
         max_retries: Maximum number of retry attempts
+        delay_between_requests: Delay between API calls to respect rate limits
         
     Returns:
         Function that retrieves ToxCast data
@@ -54,21 +56,24 @@ def toxcast_endpoints_factory(
             results = {}
             
             # Step 1: Get chemical information
-            chem_info = _get_chemical_info(identifier, identifier_type, timeout)
+            chem_info = _get_chemical_info(identifier, identifier_type, timeout, max_retries)
             if not chem_info:
                 return f"Chemical not found in EPA CompTox database: {identifier}"
             
             # Step 2: Get ToxCast bioactivity data
-            bioactivity = _get_toxcast_bioactivity(chem_info, timeout)
+            bioactivity = _get_toxcast_bioactivity(chem_info, timeout, max_retries)
             results["bioactivity"] = bioactivity
+            time.sleep(delay_between_requests)
             
             # Step 3: Get specific endpoint predictions
-            endpoint_predictions = _get_endpoint_predictions(chem_info, endpoints, timeout)
+            endpoint_predictions = _get_endpoint_predictions(chem_info, endpoints, timeout, max_retries)
             results["predictions"] = endpoint_predictions
+            time.sleep(delay_between_requests)
             
             # Step 4: Get QSAR model predictions
-            qsar_predictions = _get_qsar_predictions(chem_info, timeout)
+            qsar_predictions = _get_qsar_predictions(chem_info, timeout, max_retries)
             results["qsar"] = qsar_predictions
+            time.sleep(delay_between_requests)
             
             return _format_toxcast_results(identifier, chem_info, results)
             
@@ -78,7 +83,7 @@ def toxcast_endpoints_factory(
     return toxcast_search
 
 
-def _get_chemical_info(identifier: str, identifier_type: str, timeout: int) -> Optional[Dict]:
+def _get_chemical_info(identifier: str, identifier_type: str, timeout: int, max_retries: int) -> Optional[Dict]:
     """Get chemical information from EPA CompTox."""
     
     # EPA CompTox Chemicals Dashboard API endpoints
@@ -92,25 +97,41 @@ def _get_chemical_info(identifier: str, identifier_type: str, timeout: int) -> O
         elif identifier_type == "name":
             # Search by name first to get DTXSID
             search_url = f"{base_url}/ccdapp1/search/chemical/equal/{identifier}"
-            response = requests.get(search_url, timeout=timeout)
-            if response.status_code == 200:
-                search_data = response.json()
-                if search_data and len(search_data) > 0:
-                    dtxsid = search_data[0].get("dtxsid")
-                    if dtxsid:
-                        url = f"{base_url}/ccdapp1/chemical-detail/by-dtxsid/{dtxsid}"
+            
+            for attempt in range(max_retries):
+                try:
+                    response = requests.get(search_url, timeout=timeout)
+                    response.raise_for_status()
+                    
+                    search_data = response.json()
+                    if search_data and len(search_data) > 0:
+                        dtxsid = search_data[0].get("dtxsid")
+                        if dtxsid:
+                            url = f"{base_url}/ccdapp1/chemical-detail/by-dtxsid/{dtxsid}"
+                            break
+                        else:
+                            return None
                     else:
                         return None
-                else:
-                    return None
-            else:
-                return None
+                        
+                except Exception as e:
+                    if attempt == max_retries - 1:
+                        raise e
+                    time.sleep(1)  # Wait before retry
         else:
             return None
         
-        response = requests.get(url, timeout=timeout)
-        if response.status_code == 200:
-            return response.json()
+        # Get the chemical detail data
+        for attempt in range(max_retries):
+            try:
+                response = requests.get(url, timeout=timeout)
+                response.raise_for_status()
+                return response.json()
+                
+            except Exception as e:
+                if attempt == max_retries - 1:
+                    raise e
+                time.sleep(1)  # Wait before retry
         
     except:
         pass
@@ -118,7 +139,7 @@ def _get_chemical_info(identifier: str, identifier_type: str, timeout: int) -> O
     return None
 
 
-def _get_toxcast_bioactivity(chem_info: Dict, timeout: int) -> Dict:
+def _get_toxcast_bioactivity(chem_info: Dict, timeout: int, max_retries: int = 3) -> Dict:
     """Get ToxCast bioactivity data."""
     
     try:
@@ -129,27 +150,35 @@ def _get_toxcast_bioactivity(chem_info: Dict, timeout: int) -> Dict:
         # ToxCast bioactivity endpoint
         url = f"https://comptox.epa.gov/dashboard-api/ccdapp1/bioactivity/by-dtxsid/{dtxsid}"
         
-        response = requests.get(url, timeout=timeout)
-        if response.status_code == 200:
-            data = response.json()
-            
-            # Summarize key bioactivity metrics
-            summary = {
-                "total_assays": len(data) if isinstance(data, list) else 0,
-                "active_assays": 0,
-                "toxicity_targets": []
-            }
-            
-            if isinstance(data, list):
-                for assay in data:
-                    if assay.get("hitCall") == 1:  # Active hit
-                        summary["active_assays"] += 1
-                        target = assay.get("assayComponentEndpointName", "Unknown")
-                        if any(tox_term in target.lower() for tox_term in 
-                               ["tox", "cyto", "geno", "mutagen", "carcino"]):
-                            summary["toxicity_targets"].append(target)
-            
-            return summary
+        for attempt in range(max_retries):
+            try:
+                response = requests.get(url, timeout=timeout)
+                response.raise_for_status()
+                
+                data = response.json()
+                
+                # Summarize key bioactivity metrics
+                summary = {
+                    "total_assays": len(data) if isinstance(data, list) else 0,
+                    "active_assays": 0,
+                    "toxicity_targets": []
+                }
+                
+                if isinstance(data, list):
+                    for assay in data:
+                        if assay.get("hitCall") == 1:  # Active hit
+                            summary["active_assays"] += 1
+                            target = assay.get("assayComponentEndpointName", "Unknown")
+                            if any(tox_term in target.lower() for tox_term in 
+                                   ["tox", "cyto", "geno", "mutagen", "carcino"]):
+                                summary["toxicity_targets"].append(target)
+                
+                return summary
+                
+            except Exception as e:
+                if attempt == max_retries - 1:
+                    raise e
+                time.sleep(1)  # Wait before retry
         
     except:
         pass
@@ -157,7 +186,7 @@ def _get_toxcast_bioactivity(chem_info: Dict, timeout: int) -> Dict:
     return {"error": "Could not retrieve ToxCast bioactivity data"}
 
 
-def _get_endpoint_predictions(chem_info: Dict, endpoints: List[str], timeout: int) -> Dict:
+def _get_endpoint_predictions(chem_info: Dict, endpoints: List[str], timeout: int, max_retries: int = 3) -> Dict:
     """Get specific toxicity endpoint predictions."""
     
     predictions = {}
@@ -189,7 +218,7 @@ def _get_endpoint_predictions(chem_info: Dict, endpoints: List[str], timeout: in
     return predictions
 
 
-def _get_qsar_predictions(chem_info: Dict, timeout: int) -> Dict:
+def _get_qsar_predictions(chem_info: Dict, timeout: int, max_retries: int = 3) -> Dict:
     """Get QSAR model predictions for toxicity."""
     
     try:

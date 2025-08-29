@@ -16,6 +16,7 @@ import requests
 def chembl_mechanisms_factory(
     timeout: int = 30,
     max_retries: int = 3,
+    delay_between_requests: float = 0.2,
     api_base_url: str = "https://www.ebi.ac.uk/chembl/api/data"
 ) -> callable:
     """
@@ -24,6 +25,7 @@ def chembl_mechanisms_factory(
     Args:
         timeout: Request timeout in seconds
         max_retries: Maximum number of retry attempts
+        delay_between_requests: Delay between API calls to respect rate limits
         api_base_url: ChEMBL API base URL
         
     Returns:
@@ -51,7 +53,7 @@ def chembl_mechanisms_factory(
         
         try:
             # Step 1: Get ChEMBL compound ID
-            chembl_id = _get_chembl_compound_id(identifier, identifier_type, api_base_url, timeout)
+            chembl_id = _get_chembl_compound_id(identifier, identifier_type, api_base_url, timeout, max_retries)
             if not chembl_id:
                 return f"Compound not found in ChEMBL: {identifier}"
             
@@ -59,20 +61,20 @@ def chembl_mechanisms_factory(
             results = {}
             
             if "mechanisms" in search_types:
-                results["mechanisms"] = _get_mechanism_data(chembl_id, api_base_url, timeout)
-                time.sleep(0.2)  # Rate limiting
+                results["mechanisms"] = _get_mechanism_data(chembl_id, api_base_url, timeout, max_retries)
+                time.sleep(delay_between_requests)
             
             if "targets" in search_types:
-                results["targets"] = _get_target_data(chembl_id, api_base_url, timeout)
-                time.sleep(0.2)
+                results["targets"] = _get_target_data(chembl_id, api_base_url, timeout, max_retries)
+                time.sleep(delay_between_requests)
             
             if "bioactivities" in search_types:
-                results["bioactivities"] = _get_toxicity_bioactivities(chembl_id, api_base_url, timeout)
-                time.sleep(0.2)
+                results["bioactivities"] = _get_toxicity_bioactivities(chembl_id, api_base_url, timeout, max_retries)
+                time.sleep(delay_between_requests)
             
             if "admet" in search_types:
-                results["admet"] = _get_admet_data(chembl_id, api_base_url, timeout)
-                time.sleep(0.2)
+                results["admet"] = _get_admet_data(chembl_id, api_base_url, timeout, max_retries)
+                time.sleep(delay_between_requests)
             
             return _format_chembl_results(identifier, chembl_id, results)
             
@@ -82,7 +84,7 @@ def chembl_mechanisms_factory(
     return chembl_mechanism_search
 
 
-def _get_chembl_compound_id(identifier: str, identifier_type: str, api_base_url: str, timeout: int) -> Optional[str]:
+def _get_chembl_compound_id(identifier: str, identifier_type: str, api_base_url: str, timeout: int, max_retries: int) -> Optional[str]:
     """Get ChEMBL compound ID from identifier."""
     
     try:
@@ -92,26 +94,44 @@ def _get_chembl_compound_id(identifier: str, identifier_type: str, api_base_url:
         elif identifier_type == "smiles":
             # Search by similarity using SMILES
             url = f"{api_base_url}/similarity/{quote(identifier)}/70"
-            response = requests.get(url, timeout=timeout, headers={'Accept': 'application/json'})
             
-            if response.status_code == 200:
-                data = response.json()
-                if "molecules" in data and data["molecules"]:
-                    return data["molecules"][0]["molecule_chembl_id"]
+            for attempt in range(max_retries):
+                try:
+                    response = requests.get(url, timeout=timeout, headers={'Accept': 'application/json'})
+                    response.raise_for_status()
+                    
+                    data = response.json()
+                    if "molecules" in data and data["molecules"]:
+                        return data["molecules"][0]["molecule_chembl_id"]
+                    break
+                    
+                except Exception as e:
+                    if attempt == max_retries - 1:
+                        raise e
+                    time.sleep(1)  # Wait before retry
         
         elif identifier_type == "name":
             # Search by molecule name
             url = f"{api_base_url}/molecule/search.json?q={quote(identifier)}"
-            response = requests.get(url, timeout=timeout)
             
-            if response.status_code == 200:
-                data = response.json()
-                if "molecules" in data and data["molecules"]:
-                    for mol in data["molecules"]:
-                        if mol.get("pref_name", "").lower() == identifier.lower():
-                            return mol["molecule_chembl_id"]
-                    # If no exact match, return first result
-                    return data["molecules"][0]["molecule_chembl_id"]
+            for attempt in range(max_retries):
+                try:
+                    response = requests.get(url, timeout=timeout)
+                    response.raise_for_status()
+                    
+                    data = response.json()
+                    if "molecules" in data and data["molecules"]:
+                        for mol in data["molecules"]:
+                            if mol.get("pref_name", "").lower() == identifier.lower():
+                                return mol["molecule_chembl_id"]
+                        # If no exact match, return first result
+                        return data["molecules"][0]["molecule_chembl_id"]
+                    break
+                    
+                except Exception as e:
+                    if attempt == max_retries - 1:
+                        raise e
+                    time.sleep(1)  # Wait before retry
         
     except Exception:
         pass
@@ -119,33 +139,41 @@ def _get_chembl_compound_id(identifier: str, identifier_type: str, api_base_url:
     return None
 
 
-def _get_mechanism_data(chembl_id: str, api_base_url: str, timeout: int) -> Dict:
+def _get_mechanism_data(chembl_id: str, api_base_url: str, timeout: int, max_retries: int) -> Dict:
     """Get mechanism of action data from ChEMBL."""
     
     try:
         url = f"{api_base_url}/mechanism.json?molecule_chembl_id={chembl_id}"
-        response = requests.get(url, timeout=timeout)
         
-        if response.status_code == 200:
-            data = response.json()
-            mechanisms = data.get("mechanisms", [])
-            
-            # Summarize mechanism data
-            summary = {
-                "total_mechanisms": len(mechanisms),
-                "mechanisms_list": []
-            }
-            
-            for mech in mechanisms:
-                mech_info = {
-                    "mechanism_of_action": mech.get("mechanism_of_action"),
-                    "target_name": mech.get("target_chembl_id"),
-                    "action_type": mech.get("action_type"),
-                    "mechanism_comment": mech.get("mechanism_comment")
+        for attempt in range(max_retries):
+            try:
+                response = requests.get(url, timeout=timeout)
+                response.raise_for_status()
+                
+                data = response.json()
+                mechanisms = data.get("mechanisms", [])
+                
+                # Summarize mechanism data
+                summary = {
+                    "total_mechanisms": len(mechanisms),
+                    "mechanisms_list": []
                 }
-                summary["mechanisms_list"].append(mech_info)
-            
-            return summary
+                
+                for mech in mechanisms:
+                    mech_info = {
+                        "mechanism_of_action": mech.get("mechanism_of_action"),
+                        "target_name": mech.get("target_chembl_id"),
+                        "action_type": mech.get("action_type"),
+                        "mechanism_comment": mech.get("mechanism_comment")
+                    }
+                    summary["mechanisms_list"].append(mech_info)
+                
+                return summary
+                
+            except Exception as e:
+                if attempt == max_retries - 1:
+                    raise e
+                time.sleep(1)  # Wait before retry
         
     except Exception:
         pass
@@ -153,54 +181,62 @@ def _get_mechanism_data(chembl_id: str, api_base_url: str, timeout: int) -> Dict
     return {"error": "Could not retrieve mechanism data"}
 
 
-def _get_target_data(chembl_id: str, api_base_url: str, timeout: int) -> Dict:
+def _get_target_data(chembl_id: str, api_base_url: str, timeout: int, max_retries: int) -> Dict:
     """Get target interaction data focusing on toxicity-relevant targets."""
     
     try:
         # Get activities for the compound
         url = f"{api_base_url}/activity.json?molecule_chembl_id={chembl_id}&limit=100"
-        response = requests.get(url, timeout=timeout)
         
-        if response.status_code == 200:
-            data = response.json()
-            activities = data.get("activities", [])
-            
-            # Filter for toxicity-relevant targets
-            toxicity_targets = []
-            safety_targets = [
-                "hERG", "CYP", "cytochrome", "BSEP", "Nav1.5", "Cav1.2", 
-                "liver", "kidney", "cardiac", "hepato", "nephro", "neuro"
-            ]
-            
-            target_summary = {}
-            
-            for activity in activities:
-                target_name = activity.get("target_pref_name", "").lower()
-                target_type = activity.get("target_type", "")
+        for attempt in range(max_retries):
+            try:
+                response = requests.get(url, timeout=timeout)
+                response.raise_for_status()
                 
-                # Check if target is safety-relevant
-                is_safety_target = any(safety_term in target_name for safety_term in safety_targets)
+                data = response.json()
+                activities = data.get("activities", [])
                 
-                if is_safety_target:
-                    activity_type = activity.get("standard_type")
-                    activity_value = activity.get("standard_value")
-                    activity_unit = activity.get("standard_units")
+                # Filter for toxicity-relevant targets
+                toxicity_targets = []
+                safety_targets = [
+                    "hERG", "CYP", "cytochrome", "BSEP", "Nav1.5", "Cav1.2", 
+                    "liver", "kidney", "cardiac", "hepato", "nephro", "neuro"
+                ]
+                
+                target_summary = {}
+                
+                for activity in activities:
+                    target_name = activity.get("target_pref_name", "").lower()
+                    target_type = activity.get("target_type", "")
                     
-                    if target_name not in target_summary:
-                        target_summary[target_name] = []
+                    # Check if target is safety-relevant
+                    is_safety_target = any(safety_term in target_name for safety_term in safety_targets)
                     
-                    target_summary[target_name].append({
-                        "activity_type": activity_type,
-                        "value": activity_value,
-                        "units": activity_unit,
-                        "target_type": target_type
-                    })
-            
-            return {
-                "total_activities": len(activities),
-                "safety_targets": target_summary,
-                "safety_target_count": len(target_summary)
-            }
+                    if is_safety_target:
+                        activity_type = activity.get("standard_type")
+                        activity_value = activity.get("standard_value")
+                        activity_unit = activity.get("standard_units")
+                        
+                        if target_name not in target_summary:
+                            target_summary[target_name] = []
+                        
+                        target_summary[target_name].append({
+                            "activity_type": activity_type,
+                            "value": activity_value,
+                            "units": activity_unit,
+                            "target_type": target_type
+                        })
+                
+                return {
+                    "total_activities": len(activities),
+                    "safety_targets": target_summary,
+                    "safety_target_count": len(target_summary)
+                }
+                
+            except Exception as e:
+                if attempt == max_retries - 1:
+                    raise e
+                time.sleep(1)  # Wait before retry
         
     except Exception:
         pass
@@ -208,46 +244,54 @@ def _get_target_data(chembl_id: str, api_base_url: str, timeout: int) -> Dict:
     return {"error": "Could not retrieve target data"}
 
 
-def _get_toxicity_bioactivities(chembl_id: str, api_base_url: str, timeout: int) -> Dict:
+def _get_toxicity_bioactivities(chembl_id: str, api_base_url: str, timeout: int, max_retries: int) -> Dict:
     """Get toxicity-related bioactivity data."""
     
     try:
         # Search for toxicity-related assays
         url = f"{api_base_url}/activity.json?molecule_chembl_id={chembl_id}"
-        response = requests.get(url, timeout=timeout)
         
-        if response.status_code == 200:
-            data = response.json()
-            activities = data.get("activities", [])
-            
-            # Filter toxicity-related activities
-            toxicity_keywords = [
-                "toxic", "cytotox", "lethal", "ld50", "lc50", "viability", 
-                "death", "mortality", "hepatotox", "cardiotox", "neurotox"
-            ]
-            
-            toxicity_activities = []
-            
-            for activity in activities:
-                assay_description = activity.get("assay_description", "").lower()
-                activity_type = activity.get("standard_type", "").lower()
+        for attempt in range(max_retries):
+            try:
+                response = requests.get(url, timeout=timeout)
+                response.raise_for_status()
                 
-                is_toxicity = any(tox_term in assay_description or tox_term in activity_type 
-                                for tox_term in toxicity_keywords)
+                data = response.json()
+                activities = data.get("activities", [])
                 
-                if is_toxicity:
-                    toxicity_activities.append({
-                        "assay_description": activity.get("assay_description"),
-                        "activity_type": activity.get("standard_type"),
-                        "value": activity.get("standard_value"),
-                        "units": activity.get("standard_units"),
-                        "organism": activity.get("assay_organism")
-                    })
-            
-            return {
-                "total_toxicity_assays": len(toxicity_activities),
-                "toxicity_data": toxicity_activities[:10]  # Limit display
-            }
+                # Filter toxicity-related activities
+                toxicity_keywords = [
+                    "toxic", "cytotox", "lethal", "ld50", "lc50", "viability", 
+                    "death", "mortality", "hepatotox", "cardiotox", "neurotox"
+                ]
+                
+                toxicity_activities = []
+                
+                for activity in activities:
+                    assay_description = activity.get("assay_description", "").lower()
+                    activity_type = activity.get("standard_type", "").lower()
+                    
+                    is_toxicity = any(tox_term in assay_description or tox_term in activity_type 
+                                    for tox_term in toxicity_keywords)
+                    
+                    if is_toxicity:
+                        toxicity_activities.append({
+                            "assay_description": activity.get("assay_description"),
+                            "activity_type": activity.get("standard_type"),
+                            "value": activity.get("standard_value"),
+                            "units": activity.get("standard_units"),
+                            "organism": activity.get("assay_organism")
+                        })
+                
+                return {
+                    "total_toxicity_assays": len(toxicity_activities),
+                    "toxicity_data": toxicity_activities[:10]  # Limit display
+                }
+                
+            except Exception as e:
+                if attempt == max_retries - 1:
+                    raise e
+                time.sleep(1)  # Wait before retry
         
     except Exception:
         pass
@@ -255,37 +299,45 @@ def _get_toxicity_bioactivities(chembl_id: str, api_base_url: str, timeout: int)
     return {"error": "Could not retrieve toxicity bioactivity data"}
 
 
-def _get_admet_data(chembl_id: str, api_base_url: str, timeout: int) -> Dict:
+def _get_admet_data(chembl_id: str, api_base_url: str, timeout: int, max_retries: int) -> Dict:
     """Get ADMET (Absorption, Distribution, Metabolism, Excretion, Toxicity) data."""
     
     try:
         # Get compound properties
         url = f"{api_base_url}/molecule/{chembl_id}.json"
-        response = requests.get(url, timeout=timeout)
         
-        if response.status_code == 200:
-            data = response.json()
-            
-            # Extract ADMET-relevant properties
-            admet_props = {}
-            
-            # Molecular properties affecting ADMET
-            mol_props = data.get("molecule_properties", {})
-            if mol_props:
-                admet_props.update({
-                    "molecular_weight": mol_props.get("full_mwt"),
-                    "logp": mol_props.get("alogp"),
-                    "hbd": mol_props.get("hbd"),  # H-bond donors
-                    "hba": mol_props.get("hba"),  # H-bond acceptors
-                    "psa": mol_props.get("psa"),  # Polar surface area
-                    "ro5_violations": mol_props.get("num_ro5_violations")
-                })
-            
-            # Drug-like properties
-            admet_props["max_phase"] = data.get("max_phase")  # Clinical development phase
-            admet_props["therapeutic_flag"] = data.get("therapeutic_flag")
-            
-            return admet_props
+        for attempt in range(max_retries):
+            try:
+                response = requests.get(url, timeout=timeout)
+                response.raise_for_status()
+                
+                data = response.json()
+                
+                # Extract ADMET-relevant properties
+                admet_props = {}
+                
+                # Molecular properties affecting ADMET
+                mol_props = data.get("molecule_properties", {})
+                if mol_props:
+                    admet_props.update({
+                        "molecular_weight": mol_props.get("full_mwt"),
+                        "logp": mol_props.get("alogp"),
+                        "hbd": mol_props.get("hbd"),  # H-bond donors
+                        "hba": mol_props.get("hba"),  # H-bond acceptors
+                        "psa": mol_props.get("psa"),  # Polar surface area
+                        "ro5_violations": mol_props.get("num_ro5_violations")
+                    })
+                
+                # Drug-like properties
+                admet_props["max_phase"] = data.get("max_phase")  # Clinical development phase
+                admet_props["therapeutic_flag"] = data.get("therapeutic_flag")
+                
+                return admet_props
+                
+            except Exception as e:
+                if attempt == max_retries - 1:
+                    raise e
+                time.sleep(1)  # Wait before retry
         
     except Exception:
         pass
