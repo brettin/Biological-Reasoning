@@ -49,20 +49,20 @@ def comprehensive_toxicity_analysis(smiles: str, molecule_name: str = None):
     if molecule_name:
         logger.info(f"Molecule: {molecule_name}")
     
-    # Get centralized configuration
+    # Configure for your setup
+    # Get configuration from central config manager
     try:
-        config = ConfigManager.get_config()
-        primary_config = config.get_endpoint("primary").to_agent_config()
-        
-        # Create coordinator with centralized config
-        coordinator = Coordinator(config=primary_config)
-        logger.info(f"Using centralized configuration with {config.list_endpoints()} endpoints")
-        
+        central_config = ConfigManager.get_config()
+        config = central_config.get_agent_config("primary")
+        config.stream = False  # Use non-streaming for cleaner output
+        logger.info(f"Using primary LLM: {config.model_name}")
     except Exception as e:
-        logger.error(f"Failed to load centralized configuration: {e}")
-        print("❌ Please configure the system using .env file or environment variables")
-        print("📖 See docs/env.example for configuration template")
-        return
+        logger.error(f"Configuration error: {e}")
+        logger.error("Please check your .env file or environment variables")
+        sys.exit(1)
+    
+    # Create coordinator
+    coordinator = Coordinator(config=config)
     
     # Use instantiation pattern: toxicology → MechanisticReasoningMode + toxicology tools/prompts
     user_query = f"Analyze the comprehensive toxicity of {molecule_name or 'the molecule'} with SMILES: {smiles}"
@@ -93,7 +93,7 @@ def comprehensive_toxicity_analysis(smiles: str, molecule_name: str = None):
     
     2. **TX-Gemma Toxicity Predictions**
        - Use txgemma_predictor for multiple endpoints:
-         * Mutagenicity (Ames test)
+         * Ames 
          * hERG channel blocking (cardiotoxicity) 
          * Blood-brain barrier permeability
          * General toxicity assessment
