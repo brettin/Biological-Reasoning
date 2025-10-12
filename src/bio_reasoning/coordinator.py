@@ -90,7 +90,13 @@ class Coordinator:
         messages: Sequence[ChatCompletionMessage | dict[str, str]],
         stream: bool = False,
         user_question_override: str = None,
+        enable_trace: bool = False,
     ) -> str:
+        # Enable tracing if requested
+        if enable_trace:
+            from .trace import enable_tracing
+            enable_tracing()
+        
         # Construct system prompt with reasoning modes
         system_content = self.construct_system_prompt(messages, user_question_override)
         
