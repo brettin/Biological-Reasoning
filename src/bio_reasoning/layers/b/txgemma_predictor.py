@@ -20,7 +20,7 @@ from ...config import ConfigManager
 
 
 # Default path to TDC prompts file
-DEFAULT_TDC_PROMPTS_PATH = "test/tdc_prompts.json"
+DEFAULT_TDC_PROMPTS_PATH = "../test/tdc_prompts.json"
 
 # Parameter mapping from TDC placeholders to function parameters
 TDC_PARAMETER_MAPPING = {
@@ -65,6 +65,7 @@ def load_tdc_prompts(prompts_path: Optional[str] = None) -> Dict[str, str]:
             full_path = Path(prompts_path)
         
         if full_path.exists():
+            print(f"Loading TDC prompts from {full_path}")
             with open(full_path, 'r') as f:
                 return json.load(f)
         else:
@@ -168,6 +169,10 @@ def predict_toxicity(endpoint: str = "all", **kwargs) -> Union[str, Dict[str, st
         If endpoint is specific: String with prediction result
         If endpoint is "all": Dictionary with {endpoint_name: prediction_result}
     """
+
+    print(f"Available endpoints: {get_available_endpoints()}")
+    print(f"Predicting toxicity for {endpoint} with kwargs: {kwargs}")
+
     # Handle "all" endpoint case
     if endpoint.lower() == "all":
         return predict_all_matching_endpoints(**kwargs)
@@ -282,6 +287,8 @@ def get_txgemma_predictor() -> Optional[Callable]:
         def txgemma_predictor(endpoint: str, **kwargs) -> str:
             """TX-Gemma predictor function."""
             # Get the prompt for this endpoint
+            print(f"Available endpoints: {get_available_endpoints()}")
+            print(f"Predicting toxicity for {endpoint} with kwargs: {kwargs}")
             tdc_prompts = load_tdc_prompts()
             endpoint_mapping = {tdc_key.lower().replace("_", " "): tdc_key for tdc_key in tdc_prompts.keys()}
             
